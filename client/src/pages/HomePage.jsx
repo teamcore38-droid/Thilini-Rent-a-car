@@ -63,7 +63,7 @@ export const HomePage = () => {
       </div>
 
       {/* 3. Featured Fleet Section */}
-      <section className="py-16 sm:py-20 bg-white">
+      <section className="pt-36 sm:pt-44 md:pt-16 pb-16 sm:pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-12">
             <div>
