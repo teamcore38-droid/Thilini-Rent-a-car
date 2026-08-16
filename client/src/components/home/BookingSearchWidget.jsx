@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Calendar, Car, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Calendar, Car, AlertCircle, ShieldCheck } from 'lucide-react';
 
 const SRI_LANKA_PICKUP_LOCATIONS = [
   'Bandaranaike International Airport (CMB - Katunayake)',
@@ -86,7 +86,14 @@ export const BookingSearchWidget = ({ className = '' }) => {
   };
 
   return (
-    <div className={`bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-gray-100/80 ${className}`}>
+    <div className={`bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-gray-100/90 ${className}`}>
+      <div className="flex items-center gap-2 mb-4 sm:mb-5">
+        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+        <span className="text-xs font-black text-charcoal-900 tracking-wider uppercase">
+          Quick Reservation & Rate Finder
+        </span>
+      </div>
+
       <form onSubmit={handleSearch} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           {/* 1. Service Type */}
