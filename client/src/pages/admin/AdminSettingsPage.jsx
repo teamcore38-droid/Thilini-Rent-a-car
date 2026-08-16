@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, CheckCircle2, AlertCircle, Phone, MessageCircle, Mail, MapPin, Clock } from 'lucide-react';
+import { Settings, Save, CheckCircle2, AlertCircle, Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 
 export const AdminSettingsPage = () => {
@@ -120,7 +121,7 @@ export const AdminSettingsPage = () => {
 
             <div>
               <label className="block font-bold mb-1 flex items-center gap-1">
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
                 <span>WhatsApp Number</span>
               </label>
               <input

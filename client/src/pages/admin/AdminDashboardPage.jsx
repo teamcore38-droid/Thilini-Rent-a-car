@@ -7,10 +7,10 @@ import {
   Wrench,
   Calendar,
   ArrowRight,
-  MessageCircle,
   Phone,
   AlertCircle
 } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { bookingService } from '../../services/bookingService';
 import { useSettings } from '../../context/SettingsContext';
 
@@ -223,7 +223,7 @@ export const AdminDashboardPage = () => {
                             className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                             title="Chat on WhatsApp"
                           >
-                            <MessageCircle className="w-4 h-4" />
+                            <WhatsAppIcon className="w-4 h-4" />
                           </a>
                         )}
                         <Link

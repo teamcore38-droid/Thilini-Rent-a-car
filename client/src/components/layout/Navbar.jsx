@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Phone, MessageCircle, Menu, X, Calendar } from 'lucide-react';
+import { Phone, Menu, X, Calendar } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { WhatsAppIcon } from '../common/WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 
 export const Navbar = () => {
@@ -57,7 +58,7 @@ export const Navbar = () => {
                 rel="noopener noreferrer"
                 className="hover:text-emerald-400 transition-colors flex items-center gap-1 text-gray-300"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
                 WhatsApp: {settings.whatsapp}
               </a>
               <a
@@ -193,7 +194,7 @@ export const Navbar = () => {
                 rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-600 text-white rounded-xl font-bold shadow-sm active:bg-emerald-700 min-h-[48px]"
               >
-                <MessageCircle className="w-5 h-5" />
+                <WhatsAppIcon className="w-5 h-5" />
                 <span>WhatsApp Enquiry</span>
               </a>
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, MessageCircle, Mail, MapPin, Clock, ShieldCheck, FileText, ChevronRight } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, ShieldCheck, FileText, ChevronRight } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { WhatsAppIcon } from '../common/WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 
 export const Footer = () => {
@@ -120,7 +121,7 @@ export const Footer = () => {
                 rel="noopener noreferrer"
                 className="flex items-start gap-2.5 hover:text-emerald-400 transition-colors"
               >
-                <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
+                <WhatsAppIcon className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
                 <span>WhatsApp: {settings.whatsapp}</span>
               </a>
 

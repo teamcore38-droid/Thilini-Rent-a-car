@@ -11,13 +11,13 @@ import {
   MapPin,
   Plane,
   AlertCircle,
-  MessageCircle,
   ArrowRight,
   ArrowLeft,
   ShieldCheck,
   Copy,
   Check
 } from 'lucide-react';
+import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { vehicleService } from '../services/vehicleService';
 import { bookingService } from '../services/bookingService';
 import { useSettings } from '../context/SettingsContext';
@@ -290,7 +290,7 @@ export const BookingPage = () => {
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-sm shadow-md transition-all min-h-[48px]"
             >
-              <MessageCircle className="w-5 h-5 fill-current" />
+              <WhatsAppIcon className="w-5 h-5" />
               <span>Confirm Instant Availability on WhatsApp</span>
             </a>
 

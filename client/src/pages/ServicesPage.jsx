@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Key, UserCheck, Plane, HeartHandshake, CalendarDays, Car, ArrowRight, MessageCircle, ShieldCheck } from 'lucide-react';
+import { Key, UserCheck, Plane, HeartHandshake, CalendarDays, Car, ArrowRight, ShieldCheck } from 'lucide-react';
+import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { contentService } from '../services/contentService';
 import { useSettings } from '../context/SettingsContext';
 
@@ -101,7 +102,7 @@ export const ServicesPage = () => {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm transition-all min-h-[44px]"
                     >
-                      <MessageCircle className="w-4 h-4 fill-current" />
+                      <WhatsAppIcon className="w-4 h-4" />
                       <span>WhatsApp Enquiry</span>
                     </a>
                   </div>

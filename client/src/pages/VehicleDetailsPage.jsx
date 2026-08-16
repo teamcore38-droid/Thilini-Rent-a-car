@@ -8,7 +8,6 @@ import {
   Wind,
   Luggage,
   Shield,
-  MessageCircle,
   Calendar,
   Check,
   ArrowRight,
@@ -16,6 +15,7 @@ import {
   MapPin,
   ChevronLeft
 } from 'lucide-react';
+import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { vehicleService } from '../services/vehicleService';
 import { VehicleCard } from '../components/common/VehicleCard';
 import { useSettings } from '../context/SettingsContext';
@@ -288,7 +288,7 @@ export const VehicleDetailsPage = () => {
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl font-bold text-sm shadow-sm transition-all min-h-[48px]"
                 >
-                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <WhatsAppIcon className="w-4 h-4" />
                   <span>WhatsApp Instant Quote</span>
                 </a>
               </div>

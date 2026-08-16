@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Fuel, Gauge, Wind, MessageCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Users, Fuel, Gauge, Wind, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { WhatsAppIcon } from './WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 
 export const VehicleCard = ({ vehicle }) => {
@@ -119,7 +120,7 @@ export const VehicleCard = ({ vehicle }) => {
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-colors shadow-sm min-h-[44px]"
             >
-              <MessageCircle className="w-3.5 h-3.5 fill-current" />
+              <WhatsAppIcon className="w-3.5 h-3.5" />
               <span>Enquire</span>
             </a>
           </div>

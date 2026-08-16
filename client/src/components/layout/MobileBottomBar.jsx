@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Phone, MessageCircle, Calendar } from 'lucide-react';
+import { Phone, Calendar } from 'lucide-react';
+import { WhatsAppIcon } from '../common/WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 
 export const MobileBottomBar = () => {
@@ -36,7 +37,7 @@ export const MobileBottomBar = () => {
           className="flex flex-col items-center justify-center py-2.5 px-1 rounded-2xl bg-emerald-50 active:bg-emerald-100 text-emerald-900 border border-emerald-100 transition-colors min-h-[48px]"
           aria-label="WhatsApp Enquiry"
         >
-          <MessageCircle className="w-5 h-5 text-emerald-600 mb-0.5" />
+          <WhatsAppIcon className="w-5 h-5 text-emerald-600 mb-0.5" />
           <span className="text-[11px] font-bold tracking-tight">WhatsApp</span>
         </a>
 

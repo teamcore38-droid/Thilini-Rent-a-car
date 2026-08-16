@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, MessageCircle, Phone, HelpCircle } from 'lucide-react';
+import { Search, ChevronDown, Phone, HelpCircle } from 'lucide-react';
+import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { contentService } from '../services/contentService';
 import { useSettings } from '../context/SettingsContext';
 
@@ -160,7 +161,7 @@ export const FaqPage = () => {
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-sm transition-all min-h-[44px]"
             >
-              <MessageCircle className="w-4 h-4 fill-current" />
+              <WhatsAppIcon className="w-4 h-4" />
               <span>Ask on WhatsApp</span>
             </a>
 

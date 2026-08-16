@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ArrowRight, MapPin } from 'lucide-react';
+import { ArrowRight, MapPin } from 'lucide-react';
+import { WhatsAppIcon } from '../common/WhatsAppIcon';
 import { BookingSearchWidget } from './BookingSearchWidget';
 import { useSettings } from '../../context/SettingsContext';
 import heroDesktopImg from '../../assets/hero-desktop.webp';
@@ -71,9 +72,9 @@ export const HeroSection = () => {
               href={getWhatsAppUrl('Hello Thilini Rent A Car! I would like to inquire about vehicle availability and rates.')}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-6 py-3 sm:py-3.5 rounded-2xl font-bold text-xs sm:text-base text-white bg-[#008f58] hover:bg-[#007a4b] active:bg-[#00663e] shadow-md hover:shadow-lg transition-all min-h-[46px] text-center"
+              className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-6 py-3 sm:py-3.5 rounded-2xl font-bold text-xs sm:text-base text-white bg-[#008f58] hover:bg-[#007a4b] active:bg-[#00663e] shadow-md hover:shadow-lg transition-all min-h-[46px] text-center"
             >
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 fill-current shrink-0" />
+              <WhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
               <span className="truncate">WhatsApp Now</span>
             </a>
           </div>

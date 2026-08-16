@@ -4,7 +4,6 @@ import {
   Search,
   Filter,
   Download,
-  MessageCircle,
   Phone,
   Mail,
   CheckCircle2,
@@ -19,6 +18,7 @@ import {
   X,
   Check
 } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { bookingService } from '../../services/bookingService';
 import { vehicleService } from '../../services/vehicleService';
 import { useSettings } from '../../context/SettingsContext';
@@ -274,7 +274,7 @@ export const AdminBookingsPage = () => {
                             className="p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                             title="Chat on WhatsApp"
                           >
-                            <MessageCircle className="w-4 h-4" />
+                            <WhatsAppIcon className="w-4 h-4" />
                           </a>
                         )}
                         <button
@@ -416,7 +416,7 @@ export const AdminBookingsPage = () => {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold"
                 >
-                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <WhatsAppIcon className="w-4 h-4" />
                   <span>Open Customer WhatsApp</span>
                 </a>
 
