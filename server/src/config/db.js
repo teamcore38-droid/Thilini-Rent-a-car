@@ -12,6 +12,11 @@ try {
 let mongod = null;
 
 export const connectDB = async () => {
+  // Reuse existing connection in serverless warm invocations
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
   const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/thilini_rent_a_car';
   const isAtlas = uri.includes('mongodb+srv://');
 
@@ -33,8 +38,8 @@ export const connectDB = async () => {
   } catch (error) {
     console.warn(`[MongoDB Warning]: Primary connection to ${isAtlas ? 'MongoDB Atlas' : uri} failed (${error.message}).`);
 
-    // In development mode, spin up embedded MongoMemoryServer fallback if connection is interrupted
-    if (process.env.NODE_ENV !== 'production' && !isAtlas) {
+    // In development mode (not serverless / production), spin up embedded MongoMemoryServer fallback
+    if (process.env.NODE_ENV !== 'production' && !isAtlas && !process.env.VERCEL) {
       try {
         console.log('[MongoDB Embedded]: Starting embedded MongoDB instance for frictionless local execution...');
         const { MongoMemoryServer } = await import('mongodb-memory-server');
@@ -49,11 +54,7 @@ export const connectDB = async () => {
         console.error('[MongoDB Embedded Error]:', memError.message);
       }
     } else if (isAtlas) {
-      console.error('[MongoDB Atlas Error]: Please ensure:');
-      console.error(' 1. MongoDB Atlas Network Access (IP Access List) includes 0.0.0.0/0 or your current IP.');
-      console.error(' 2. Database User credentials (qzynes_db_user) are active with readWriteAnyDatabase permission.');
-    } else {
-      process.exit(1);
+      console.error('[MongoDB Atlas Error]: Please ensure Atlas IP Whitelist allows 0.0.0.0/0 (all IPs) for Vercel serverless functions.');
     }
   }
 };
