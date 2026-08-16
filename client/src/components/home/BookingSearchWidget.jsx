@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Calendar, Car, AlertCircle, ShieldCheck } from 'lucide-react';
 
 const SRI_LANKA_PICKUP_LOCATIONS = [
-  'Bandaranaike International Airport (CMB - Katunayake)',
+  'Bandaranaike International Airport (CMB)',
   'Colombo City (Fort / Kollupitiya / Bambalapitiya)',
   'Negombo Beach / City',
   'Kandy City Center',
@@ -86,7 +86,8 @@ export const BookingSearchWidget = ({ className = '' }) => {
   };
 
   return (
-    <div className={`bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-gray-100/90 ${className}`}>
+    <div className={`bg-white rounded-3xl p-5 sm:p-7 shadow-2xl border border-gray-100 ${className}`}>
+      {/* Header */}
       <div className="flex items-center gap-2 mb-4 sm:mb-5">
         <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
         <span className="text-xs font-black text-charcoal-900 tracking-wider uppercase">
@@ -94,38 +95,36 @@ export const BookingSearchWidget = ({ className = '' }) => {
         </span>
       </div>
 
-      <form onSubmit={handleSearch} className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <form onSubmit={handleSearch} className="space-y-3.5 sm:space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
           {/* 1. Service Type */}
           <div>
-            <label className="block text-xs font-bold text-charcoal-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5">
               Service Type
             </label>
-            <div className="relative">
-              <select
-                value={serviceType}
-                onChange={(e) => setServiceType(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 text-charcoal-800 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 p-2.5 min-h-[44px] font-medium"
-              >
-                {SERVICE_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={serviceType}
+              onChange={(e) => setServiceType(e.target.value)}
+              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-3.5 py-3 min-h-[44px] font-medium"
+            >
+              {SERVICE_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* 2. Pickup Location */}
           <div>
-            <label className="block text-xs font-bold text-charcoal-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-brand-600" />
               <span>Pickup Location</span>
             </label>
             <select
               value={pickupLocation}
               onChange={(e) => setPickupLocation(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 text-charcoal-800 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 p-2.5 min-h-[44px] font-medium"
+              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-3.5 py-3 min-h-[44px] font-medium truncate"
             >
               {SRI_LANKA_PICKUP_LOCATIONS.map((loc) => (
                 <option key={loc} value={loc}>
@@ -137,7 +136,7 @@ export const BookingSearchWidget = ({ className = '' }) => {
 
           {/* 3. Pickup Date */}
           <div>
-            <label className="block text-xs font-bold text-charcoal-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-brand-600" />
               <span>Pickup Date</span>
             </label>
@@ -149,14 +148,14 @@ export const BookingSearchWidget = ({ className = '' }) => {
                 setPickupDate(e.target.value);
                 setDateError('');
               }}
-              className="w-full bg-gray-50 border border-gray-200 text-charcoal-800 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 p-2.5 min-h-[44px] font-medium"
+              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-3.5 py-3 min-h-[44px] font-medium"
               required
             />
           </div>
 
           {/* 4. Return Date */}
           <div>
-            <label className="block text-xs font-bold text-charcoal-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-brand-600" />
               <span>Return Date</span>
             </label>
@@ -168,21 +167,21 @@ export const BookingSearchWidget = ({ className = '' }) => {
                 setReturnDate(e.target.value);
                 setDateError('');
               }}
-              className="w-full bg-gray-50 border border-gray-200 text-charcoal-800 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 p-2.5 min-h-[44px] font-medium"
+              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-3.5 py-3 min-h-[44px] font-medium"
               required
             />
           </div>
 
-          {/* 5. Vehicle Category */}
-          <div>
-            <label className="block text-xs font-bold text-charcoal-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+          {/* 5. Vehicle Category (Visible on sm/lg) */}
+          <div className="hidden sm:block lg:block">
+            <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Car className="w-3.5 h-3.5 text-brand-600" />
               <span>Vehicle Class</span>
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 text-charcoal-800 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 p-2.5 min-h-[44px] font-medium"
+              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-3.5 py-3 min-h-[44px] font-medium"
             >
               {CATEGORY_OPTIONS.map((cat) => (
                 <option key={cat} value={cat}>
@@ -195,7 +194,7 @@ export const BookingSearchWidget = ({ className = '' }) => {
 
         {/* Date Validation Alert */}
         {dateError && (
-          <div className="flex items-center gap-2 p-2.5 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
+          <div className="flex items-center gap-2 p-2.5 text-xs text-red-700 bg-red-50 rounded-xl border border-red-200">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
             <span>{dateError}</span>
           </div>
@@ -205,7 +204,7 @@ export const BookingSearchWidget = ({ className = '' }) => {
         <div className="pt-2 flex justify-end">
           <button
             type="submit"
-            className="w-full sm:w-auto px-8 py-3 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm min-h-[44px]"
+            className="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm min-h-[48px]"
           >
             <Search className="w-4 h-4" />
             <span>Find Available Vehicles</span>

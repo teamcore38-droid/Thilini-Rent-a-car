@@ -118,10 +118,10 @@ export const Navbar = () => {
             </div>
 
             {/* Mobile Actions: Phone & Hamburger Toggle */}
-            <div className="flex md:hidden items-center gap-2">
+            <div className="flex md:hidden items-center gap-2.5">
               <a
                 href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
-                className="p-2 rounded-lg text-brand-600 bg-brand-50 hover:bg-brand-100 transition-colors flex items-center justify-center min-h-[44px] min-w-[44px]"
+                className="p-2.5 rounded-2xl text-brand-600 bg-rose-50 border border-rose-100/80 hover:bg-rose-100 transition-colors flex items-center justify-center min-h-[44px] min-w-[44px]"
                 aria-label="Call Thilini Rent A Car"
               >
                 <Phone className="w-5 h-5" />
@@ -130,7 +130,7 @@ export const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg text-charcoal-700 hover:text-brand-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2.5 rounded-2xl text-charcoal-900 hover:bg-gray-100 focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
                 aria-expanded={mobileMenuOpen}
                 aria-label="Toggle navigation menu"
               >
