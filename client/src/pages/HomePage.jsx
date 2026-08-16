@@ -57,8 +57,10 @@ export const HomePage = () => {
       {/* 1. Hero Section */}
       <HeroSection />
 
-      {/* 2. Trust Strip */}
-      <TrustStrip />
+      {/* 2. Trust Strip - Desktop Only */}
+      <div className="hidden md:block">
+        <TrustStrip />
+      </div>
 
       {/* 3. Featured Fleet Section */}
       <section className="py-16 sm:py-20 bg-white">
@@ -115,10 +117,15 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* Trust Strip - Mobile Only (Positioned directly between Browse Fleet button and Our Rental Services) */}
+      <div className="block md:hidden">
+        <TrustStrip />
+      </div>
+
       {/* 4. Rental Services Showcase */}
-      <section className="py-16 sm:py-20 bg-gray-50 border-t border-gray-100">
+      <section className="py-16 sm:py-20 bg-gray-50 border-t border-gray-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
             <span className="text-xs font-black uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-md">
               Comprehensive Travel Solutions
             </span>
@@ -130,13 +137,14 @@ export const HomePage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Swipeable cards on mobile (< md), responsive grid on desktop (md+) */}
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-4 md:pb-0">
             {services.map((srv, idx) => {
               const IconComp = serviceIcons[srv.iconName] || Car;
               return (
                 <div
                   key={srv._id || idx}
-                  className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200/90 shadow-subtle hover:border-brand-300 hover:shadow-card transition-all duration-300 flex flex-col justify-between"
+                  className="w-[85vw] sm:w-[350px] md:w-auto shrink-0 md:shrink snap-center bg-white rounded-2xl p-6 sm:p-7 border border-gray-200/90 shadow-subtle hover:border-brand-300 hover:shadow-card transition-all duration-300 flex flex-col justify-between"
                 >
                   <div>
                     <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mb-5 border border-brand-100">
@@ -171,6 +179,11 @@ export const HomePage = () => {
                 </div>
               );
             })}
+          </div>
+
+          {/* Mobile Swipe Hint */}
+          <div className="flex md:hidden items-center justify-center gap-1.5 text-[11px] font-semibold text-gray-400 mt-2">
+            <span>← Swipe to explore all services →</span>
           </div>
         </div>
       </section>

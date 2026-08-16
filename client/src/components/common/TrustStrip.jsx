@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldCheck, CalendarCheck, Plane, Headset } from 'lucide-react';
 
-export const TrustStrip = () => {
+export const TrustStrip = ({ className = '' }) => {
   const benefits = [
     {
       icon: ShieldCheck,
@@ -26,7 +26,7 @@ export const TrustStrip = () => {
   ];
 
   return (
-    <section className="bg-white border-y border-gray-100 py-8 shadow-sm">
+    <section className={`bg-white border-y border-gray-100 py-8 shadow-sm ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {benefits.map((item, index) => {

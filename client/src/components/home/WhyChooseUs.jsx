@@ -36,9 +36,9 @@ export const WhyChooseUs = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-20 bg-white border-b border-gray-100">
+    <section className="py-16 sm:py-20 bg-white border-b border-gray-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
           <span className="text-xs font-black uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-md">
             Our Commitment
           </span>
@@ -50,26 +50,34 @@ export const WhyChooseUs = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        {/* Swipeable on mobile (< md), responsive grid on desktop (md+) */}
+        <div className="flex md:grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-4 md:pb-0">
           {points.map((p, idx) => {
             const IconComponent = p.icon;
             return (
               <div
                 key={idx}
-                className="p-6 rounded-2xl bg-gray-50/60 border border-gray-100 hover:border-brand-200 hover:bg-white hover:shadow-subtle transition-all duration-300"
+                className="w-[82vw] sm:w-auto shrink-0 sm:shrink snap-center p-6 rounded-2xl bg-gray-50/60 border border-gray-100 hover:border-brand-200 hover:bg-white hover:shadow-subtle transition-all duration-300 flex flex-col justify-between"
               >
-                <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center mb-4">
-                  <IconComponent className="w-5 h-5" />
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center mb-4">
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-charcoal-900 mb-2">
+                    {p.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                    {p.desc}
+                  </p>
                 </div>
-                <h3 className="text-base font-bold text-charcoal-900 mb-2">
-                  {p.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                  {p.desc}
-                </p>
               </div>
             );
           })}
+        </div>
+
+        {/* Mobile Swipe Hint */}
+        <div className="flex md:hidden items-center justify-center gap-1.5 text-[11px] font-semibold text-gray-400 mt-2">
+          <span>← Swipe to explore reasons →</span>
         </div>
       </div>
     </section>
