@@ -32,11 +32,11 @@ export const HeroSection = () => {
           className="w-full h-full object-cover object-top"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-charcoal-950/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-charcoal-950/95" />
       </div>
 
       {/* Hero Content Area */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-12 sm:pb-16 lg:pb-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-44 sm:pt-56 md:pt-16 pb-12 sm:pb-16 lg:pb-20">
         {/* Top Mini Pill */}
         <div className="flex justify-start">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-950/70 border border-brand-500/40 text-brand-300 text-[11px] font-semibold backdrop-blur-md mb-3 sm:mb-6 shadow-sm">
@@ -79,8 +79,8 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Quick Booking Search Form - Shifted down on mobile so the fleet of cars is fully visible */}
-        <div className="mt-56 sm:mt-64 md:mt-40 -mb-36 sm:-mb-40 md:-mb-44">
+        {/* Quick Booking Search Form - Directly below action buttons on mobile */}
+        <div className="mt-5 sm:mt-8 md:mt-40 -mb-36 sm:-mb-40 md:-mb-44">
           <BookingSearchWidget />
         </div>
       </div>
