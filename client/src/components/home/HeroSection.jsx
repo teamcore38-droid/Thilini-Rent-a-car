@@ -79,8 +79,8 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Quick Booking Search Form - Overlaps half in hero background and half below with ample clearance */}
-        <div className="mt-20 sm:mt-32 lg:mt-40 -mb-32 sm:-mb-40 lg:-mb-44">
+        {/* Quick Booking Search Form - Shifted down on mobile so the fleet of cars is fully visible */}
+        <div className="mt-56 sm:mt-64 md:mt-40 -mb-36 sm:-mb-40 md:-mb-44">
           <BookingSearchWidget />
         </div>
       </div>
