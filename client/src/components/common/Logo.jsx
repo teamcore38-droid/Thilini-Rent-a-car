@@ -4,7 +4,7 @@ import logoImg from '../../assets/logo.webp';
 
 /**
  * Thilini Rent A Car Official Logo Component
- * - Renders the official brand logo from TRC logo.webp
+ * - Renders the official transparent brand logo (Thilini-Rent-A-Car-Logo-Transparent.webp)
  * - Fully responsive with crisp aspect-ratio preservation
  * - High-contrast support for dark backgrounds (footer, admin sidebar)
  */
@@ -15,11 +15,11 @@ export const Logo = ({
   asLink = true
 }) => {
   const sizeClasses = {
-    sm: 'h-10 sm:h-11',
-    md: 'h-14 sm:h-16',
-    lg: 'h-20 sm:h-24',
-    xl: 'h-28 sm:h-32'
-  }[size] || 'h-14 sm:h-16';
+    sm: 'h-9 sm:h-10 max-h-[44px]',
+    md: 'h-11 sm:h-13 md:h-14 max-h-[58px]',
+    lg: 'h-16 sm:h-20 max-h-[80px]',
+    xl: 'h-24 sm:h-28 max-h-[110px]'
+  }[size] || 'h-11 sm:h-13 md:h-14 max-h-[58px]';
 
   const isDarkSurface = variant === 'white' || variant === 'dark';
 
