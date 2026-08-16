@@ -36,10 +36,10 @@ export const HeroSection = () => {
       </div>
 
       {/* Hero Content Area */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-44 sm:pt-56 md:pt-16 pb-12 sm:pb-16 lg:pb-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40 md:pt-14 pb-8 sm:pb-12 md:pb-14">
         {/* Top Mini Pill */}
         <div className="flex justify-start">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-950/70 border border-brand-500/40 text-brand-300 text-[11px] font-semibold backdrop-blur-md mb-3 sm:mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-950/70 border border-brand-500/40 text-brand-300 text-[11px] font-semibold backdrop-blur-md mb-2.5 sm:mb-4 shadow-sm">
             <MapPin className="w-3 h-3 text-brand-400" />
             <span>Sri Lanka Wide Car Rental & Airport Pickup</span>
           </div>
@@ -47,10 +47,10 @@ export const HeroSection = () => {
 
         {/* Main Headline & Supporting Text */}
         <div className="max-w-2xl text-left">
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15] mb-2 sm:mb-4 max-w-[65%] sm:max-w-none">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.15] mb-2 sm:mb-3 max-w-[65%] sm:max-w-none">
             Your Journey.<br />Your Freedom.
           </h1>
-          <p className="text-xs sm:text-base lg:text-lg text-gray-200 font-medium leading-relaxed mb-4 sm:mb-8 max-w-[62%] sm:max-w-xl">
+          <p className="text-xs sm:text-base lg:text-lg text-gray-200 font-medium leading-relaxed mb-3.5 sm:mb-6 max-w-[62%] sm:max-w-xl">
             <span className="md:hidden">Premium, reliable rentals across Sri Lanka.</span>
             <span className="hidden md:inline">
               Premium, reliable self-drive, chauffeur and airport rentals across Sri Lanka.
@@ -79,8 +79,8 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Quick Booking Search Form - Directly below action buttons on mobile */}
-        <div className="mt-5 sm:mt-8 md:mt-40 -mb-36 sm:-mb-40 md:-mb-44">
+        {/* Quick Booking Search Form - Overlaps bottom edge neatly */}
+        <div className="mt-4 sm:mt-6 md:mt-24 -mb-28 sm:-mb-32 md:-mb-24">
           <BookingSearchWidget />
         </div>
       </div>

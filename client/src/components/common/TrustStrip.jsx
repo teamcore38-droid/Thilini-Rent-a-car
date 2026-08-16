@@ -26,9 +26,9 @@ export const TrustStrip = ({ className = '' }) => {
   ];
 
   return (
-    <section className={`bg-white border-y border-gray-100 py-8 md:pt-36 lg:pt-40 md:pb-12 shadow-sm ${className}`}>
+    <section className={`bg-white border-y border-gray-100 py-6 md:pt-16 md:pb-6 shadow-sm ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {benefits.map((item, index) => {
             const IconComponent = item.icon;
             return (

@@ -27,38 +27,38 @@ export const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-20 bg-gray-50 border-b border-gray-100">
+    <section className="py-8 sm:py-10 bg-gray-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
           <span className="text-xs font-black uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-md">
             Simple 3-Step Process
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 mt-3">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 mt-2">
             How Renting Works
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 mt-1.5">
             No complicated account registrations or hidden charges. Reserve your vehicle in three straightforward steps.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           {steps.map((step, idx) => {
             const IconComp = step.icon;
             return (
               <div
                 key={idx}
-                className="relative bg-white rounded-2xl p-6 sm:p-8 border border-gray-200/90 shadow-subtle flex flex-col items-start"
+                className="relative bg-white rounded-2xl p-5 sm:p-7 border border-gray-200/90 shadow-subtle flex flex-col items-start"
               >
-                <div className="flex items-center justify-between w-full mb-6">
-                  <div className="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100">
-                    <IconComp className="w-6 h-6" />
+                <div className="flex items-center justify-between w-full mb-4 sm:mb-5">
+                  <div className="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-100">
+                    <IconComp className="w-5 h-5" />
                   </div>
                   <span className="text-3xl font-black text-gray-200">{step.number}</span>
                 </div>
-                <h3 className="text-lg font-bold text-charcoal-900 mb-2">
+                <h3 className="text-base sm:text-lg font-bold text-charcoal-900 mb-1.5">
                   {step.title}
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   {step.description}
                 </p>
               </div>

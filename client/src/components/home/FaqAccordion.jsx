@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, HelpCircle } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 
 export const FaqAccordion = ({ faqs = [] }) => {
   const [openIndex, setOpenIndex] = useState(0);
@@ -11,21 +11,21 @@ export const FaqAccordion = ({ faqs = [] }) => {
   };
 
   return (
-    <section className="py-16 sm:py-20 bg-white">
+    <section className="py-8 sm:py-10 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 sm:mb-14">
+        <div className="text-center mb-6 sm:mb-8">
           <span className="text-xs font-black uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-md">
             Got Questions?
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 mt-3">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 mt-2">
             Frequently Asked Questions
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-gray-600 mt-1.5">
             Essential information regarding documents, deposits, airport delivery, and fuel policies.
           </p>
         </div>
 
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {faqs.map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (
@@ -36,7 +36,7 @@ export const FaqAccordion = ({ faqs = [] }) => {
                 <button
                   type="button"
                   onClick={() => toggleFAQ(idx)}
-                  className="w-full text-left px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 bg-gray-50/70 hover:bg-gray-100/70 transition-colors min-h-[52px]"
+                  className="w-full text-left px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-4 bg-gray-50/70 hover:bg-gray-100/70 transition-colors min-h-[48px]"
                   aria-expanded={isOpen}
                 >
                   <span className="font-bold text-sm sm:text-base text-charcoal-900 pr-2">
@@ -50,7 +50,7 @@ export const FaqAccordion = ({ faqs = [] }) => {
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 sm:px-6 py-4 bg-white border-t border-gray-100 text-sm text-charcoal-700 leading-relaxed">
+                  <div className="px-5 sm:px-6 py-3.5 bg-white border-t border-gray-100 text-sm text-charcoal-700 leading-relaxed">
                     {faq.answer}
                   </div>
                 )}

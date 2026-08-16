@@ -63,9 +63,9 @@ export const HomePage = () => {
       </div>
 
       {/* 3. Featured Fleet Section */}
-      <section className="pt-44 sm:pt-48 md:pt-16 pb-16 sm:pb-20 bg-white">
+      <section className="pt-24 sm:pt-28 md:pt-6 pb-6 sm:pb-8 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8">
             <div>
               <span className="text-xs font-black uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-md">
                 Verified Fleet
@@ -79,7 +79,7 @@ export const HomePage = () => {
             </div>
             <Link
               to="/fleet"
-              className="mt-4 md:mt-0 inline-flex items-center gap-1.5 font-bold text-sm text-brand-600 hover:text-brand-700 group"
+              className="mt-3 md:mt-0 inline-flex items-center gap-1.5 font-bold text-sm text-brand-600 hover:text-brand-700 group"
             >
               <span>View All Fleet</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -105,7 +105,7 @@ export const HomePage = () => {
             )}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-6 sm:mt-8">
             <Link
               to="/fleet"
               className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-extrabold text-sm text-charcoal-800 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors shadow-subtle min-h-[48px]"
@@ -123,22 +123,22 @@ export const HomePage = () => {
       </div>
 
       {/* 4. Rental Services Showcase */}
-      <section className="py-16 sm:py-20 bg-gray-50 border-t border-gray-100 overflow-hidden">
+      <section className="py-8 sm:py-10 bg-gray-50 border-t border-gray-100 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
             <span className="text-xs font-black uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-md">
               Comprehensive Travel Solutions
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 mt-3">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 mt-2">
               Our Rental Services
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 mt-2">
+            <p className="text-sm sm:text-base text-gray-600 mt-1.5">
               From self-drive freedom across Sri Lanka to luxury wedding cars and Katunayake airport transfers.
             </p>
           </div>
 
           {/* Swipeable cards on mobile (< md), responsive grid on desktop (md+) */}
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-4 md:pb-0">
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-2 md:pb-0">
             {services.map((srv, idx) => {
               const IconComp = serviceIcons[srv.iconName] || Car;
               return (
