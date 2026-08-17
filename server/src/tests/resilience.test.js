@@ -7,6 +7,9 @@ test('Settings Resilience: Fallback settings contains all required brand fields'
   assert.ok(DEFAULT_BUSINESS_SETTINGS.phone);
   assert.ok(DEFAULT_BUSINESS_SETTINGS.whatsapp);
   assert.ok(DEFAULT_BUSINESS_SETTINGS.email);
+  assert.ok(DEFAULT_BUSINESS_SETTINGS.bookingLocations.officeLocation);
+  assert.ok(DEFAULT_BUSINESS_SETTINGS.bookingLocations.airportLocation);
+  assert.ok(DEFAULT_BUSINESS_SETTINGS.bookingLocations.defaultHandoverLocation);
   assert.strictEqual(typeof DEFAULT_BUSINESS_SETTINGS.businessName, 'string');
 });
 

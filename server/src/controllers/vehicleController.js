@@ -19,6 +19,8 @@ export const VEHICLE_CARD_PROJECTION = {
   seats: 1,
   hasAC: 1,
   dailyRate: 1,
+  weeklyRate: 1,
+  monthlyRate: 1,
   status: 1,
   featured: 1,
   includedMileagePerDay: 1,

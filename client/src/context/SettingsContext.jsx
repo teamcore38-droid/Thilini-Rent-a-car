@@ -21,6 +21,14 @@ const defaultSettings = {
   standardDeposit: 25000,
   includedMileagePerDay: 100,
   excessMileageRate: 75,
+  bookingLocations: {
+    officeLocation: 'Thilini Rent A Car Office',
+    airportLocation: 'Bandaranaike International Airport (CMB - Katunayake)',
+    defaultDeliveryLocation: 'Thilini Rent A Car Office',
+    defaultHandoverLocation: 'Thilini Rent A Car Office',
+    defaultPickupLocation: 'Thilini Rent A Car Office',
+    defaultDropoffLocation: 'Thilini Rent A Car Office'
+  },
   isPlaceholder: true
 };
 

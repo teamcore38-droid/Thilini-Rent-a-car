@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Fuel, Gauge, Wind, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { VehiclePricingSelector } from './VehiclePricingSelector';
 import { useSettings } from '../../context/SettingsContext';
 import {
   getOptimizedImageUrl,
@@ -192,18 +193,13 @@ export const VehicleCard = ({ vehicle, priority = false }) => {
 
         {/* Pricing & CTA Actions */}
         <div className="pt-3 border-t border-gray-100 mt-auto">
-          <div className="flex items-baseline justify-between mb-3">
-            <div>
-              <span className="text-[11px] text-gray-500 uppercase font-semibold block">
-                Starting Rate
-              </span>
-              <span className="text-xl font-black text-brand-600">
-                {formatCurrency(vehicle.dailyRate)}
-              </span>
-              <span className="text-xs text-gray-500 font-medium ml-1">/ day</span>
-            </div>
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <VehiclePricingSelector
+              vehicle={vehicle}
+              formatCurrency={formatCurrency}
+            />
             {vehicle.includedMileagePerDay && (
-              <span className="text-[11px] text-gray-600 bg-gray-100 px-2 py-1 rounded font-medium">
+              <span className="mt-0.5 shrink-0 text-[11px] text-gray-600 bg-gray-100 px-2 py-1 rounded font-medium">
                 {vehicle.includedMileagePerDay} km/day incl.
               </span>
             )}

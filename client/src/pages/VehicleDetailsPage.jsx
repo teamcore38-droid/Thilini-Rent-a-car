@@ -201,8 +201,7 @@ export const VehicleDetailsPage = () => {
   const handleBookNow = () => {
     const params = new URLSearchParams();
     params.set('vehicle', vehicle._id);
-    if (serviceType) params.set('serviceType', serviceType);
-    if (pickupLocation) params.set('pickupLocation', pickupLocation);
+    params.set('serviceType', 'Self Drive');
     if (pickupDate) params.set('pickupDate', pickupDate);
     if (returnDate) params.set('returnDate', returnDate);
     navigate(`/book?${params.toString()}`);

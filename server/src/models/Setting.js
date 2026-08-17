@@ -59,6 +59,17 @@ const settingSchema = new mongoose.Schema(
       type: Number,
       default: 75
     },
+    bookingLocations: {
+      officeLocation: { type: String, default: 'Thilini Rent A Car Office' },
+      airportLocation: {
+        type: String,
+        default: 'Bandaranaike International Airport (CMB - Katunayake)'
+      },
+      defaultDeliveryLocation: { type: String, default: 'Thilini Rent A Car Office' },
+      defaultHandoverLocation: { type: String, default: 'Thilini Rent A Car Office' },
+      defaultPickupLocation: { type: String, default: 'Thilini Rent A Car Office' },
+      defaultDropoffLocation: { type: String, default: 'Thilini Rent A Car Office' }
+    },
     rentalTermsText: {
       type: String,
       default: ''

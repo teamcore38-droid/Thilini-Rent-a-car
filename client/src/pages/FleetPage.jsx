@@ -395,16 +395,6 @@ export const FleetPage = () => {
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-charcoal-900 tracking-tight">
-            Our Vehicle Fleet
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
-            Choose from our fleet of reliable Sri Lankan rental vehicles with transparent LKR rates.
-          </p>
-        </div>
-
         {/* Top Search & Filter Bar */}
         <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 shadow-subtle mb-8 flex flex-col md:flex-row gap-3.5 items-center justify-between">
           {/* Search Input */}

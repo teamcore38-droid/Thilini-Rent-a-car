@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Car,
   User,
-  MapPin,
   Plane,
   AlertCircle,
   ArrowRight,
@@ -18,34 +17,24 @@ import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { vehicleService } from '../services/vehicleService';
 import { bookingService } from '../services/bookingService';
 import { useSettings } from '../context/SettingsContext';
-
-const SRI_LANKA_LOCATIONS = [
-  'Bandaranaike International Airport (CMB - Katunayake)',
-  'Colombo City (Fort / Kollupitiya / Bambalapitiya)',
-  'Negombo Beach / City',
-  'Kandy City Center',
-  'Galle Fort / City',
-  'Bentota / Beruwala',
-  'Mirissa / Weligama',
-  'Ella / Badulla',
-  'Nuwara Eliya Town',
-  'Sigiriya / Dambulla',
-  'Trincomalee / Nilaveli',
-  'Jaffna Town',
-  'Custom Location / Hotel Delivery'
-];
-
-const SERVICE_TYPES = [
-  'Self Drive',
-  'With Driver',
-  'Airport Transfer',
-  'Wedding Hire',
-  'Long-Term Rental'
-];
+import { BookingLocationSelect } from '../components/booking/BookingLocationSelect';
+import {
+  BOOKING_SERVICE_TYPES,
+  DEFAULT_SERVICE_TYPE,
+  getBookingLocationOptions,
+  getServiceLocationConfig,
+  isIncompleteCustomLocation
+} from '../config/bookingLocations';
 
 export const BookingPage = () => {
   const [searchParams] = useSearchParams();
-  const { formatCurrency } = useSettings();
+  const { formatCurrency, settings } = useSettings();
+  const requestedServiceType = BOOKING_SERVICE_TYPES.includes(searchParams.get('serviceType'))
+    ? searchParams.get('serviceType')
+    : DEFAULT_SERVICE_TYPE;
+  const initialLocationConfig = getServiceLocationConfig(requestedServiceType, settings);
+  const prefilledPickupLocation = searchParams.get('pickupLocation');
+  const prefilledDropoffLocation = searchParams.get('dropoffLocation');
 
   const [currentStep, setCurrentStep] = useState(1);
   const [vehicles, setVehicles] = useState([]);
@@ -59,12 +48,15 @@ export const BookingPage = () => {
 
   // Step 1: Rental details
   const [selectedVehicleId, setSelectedVehicleId] = useState(searchParams.get('vehicle') || '');
-  const [serviceType, setServiceType] = useState(searchParams.get('serviceType') || 'Self Drive');
+  const [serviceType, setServiceType] = useState(requestedServiceType);
   const [pickupLocation, setPickupLocation] = useState(
-    searchParams.get('pickupLocation') || SRI_LANKA_LOCATIONS[0]
+    prefilledPickupLocation || initialLocationConfig.startDefault
   );
   const [dropoffLocation, setDropoffLocation] = useState(
-    searchParams.get('dropoffLocation') || SRI_LANKA_LOCATIONS[0]
+    prefilledDropoffLocation || initialLocationConfig.endDefault
+  );
+  const [locationsEdited, setLocationsEdited] = useState(
+    Boolean(prefilledPickupLocation || prefilledDropoffLocation)
   );
   const [pickupDateTime, setPickupDateTime] = useState(
     searchParams.get('pickupDate') ? `${searchParams.get('pickupDate')}T10:00` : ''
@@ -83,6 +75,37 @@ export const BookingPage = () => {
   const [notes, setNotes] = useState('');
   const [preferredContactMethod, setPreferredContactMethod] = useState('WhatsApp');
   const [agreeTerms, setAgreeTerms] = useState(false);
+
+  const locationConfig = getServiceLocationConfig(serviceType, settings);
+  const locationOptions = getBookingLocationOptions(settings);
+
+  useEffect(() => {
+    if (locationsEdited) return;
+    const defaults = getServiceLocationConfig(serviceType, settings);
+    setPickupLocation(defaults.startDefault);
+    setDropoffLocation(defaults.endDefault);
+  }, [locationsEdited, serviceType, settings]);
+
+  const handleServiceTypeChange = (nextServiceType) => {
+    const defaults = getServiceLocationConfig(nextServiceType, settings);
+    setServiceType(nextServiceType);
+    setPickupLocation(defaults.startDefault);
+    setDropoffLocation(defaults.endDefault);
+    setLocationsEdited(false);
+    setError('');
+  };
+
+  const updatePickupLocation = (location) => {
+    setPickupLocation(location);
+    setLocationsEdited(true);
+    setError('');
+  };
+
+  const updateDropoffLocation = (location) => {
+    setDropoffLocation(location);
+    setLocationsEdited(true);
+    setError('');
+  };
 
   // Fetch active vehicles on mount
   useEffect(() => {
@@ -129,6 +152,14 @@ export const BookingPage = () => {
   const validateStep1 = () => {
     if (!selectedVehicleId) {
       setError('Please select a vehicle.');
+      return false;
+    }
+    if (isIncompleteCustomLocation(pickupLocation)) {
+      setError(`Please select or enter the ${locationConfig.startLabel.toLowerCase()}.`);
+      return false;
+    }
+    if (isIncompleteCustomLocation(dropoffLocation)) {
+      setError(`Please select or enter the ${locationConfig.endLabel.toLowerCase()}.`);
       return false;
     }
     if (!pickupDateTime || !returnDateTime) {
@@ -280,7 +311,7 @@ export const BookingPage = () => {
                 </span>
               </div>
               <div>
-                <span className="text-gray-500 block">Pickup Location:</span>
+                <span className="text-gray-500 block">{locationConfig.startLabel}:</span>
                 <span className="font-bold truncate block">{booking.pickupLocation}</span>
               </div>
             </div>
@@ -399,16 +430,17 @@ export const BookingPage = () => {
                   Service Option
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {SERVICE_TYPES.map((type) => (
+                  {BOOKING_SERVICE_TYPES.map((type) => (
                     <button
                       key={type}
                       type="button"
-                      onClick={() => setServiceType(type)}
+                      onClick={() => handleServiceTypeChange(type)}
                       className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all text-center min-h-[44px] ${
                         serviceType === type
                           ? 'bg-brand-600 text-white border-brand-600 shadow-sm'
                           : 'bg-gray-50 text-charcoal-700 border-gray-200 hover:bg-gray-100'
                       }`}
+                      aria-pressed={serviceType === type}
                     >
                       {type}
                     </button>
@@ -418,41 +450,19 @@ export const BookingPage = () => {
 
               {/* Locations */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-brand-600" />
-                    <span>Pickup Location</span>
-                  </label>
-                  <select
-                    value={pickupLocation}
-                    onChange={(e) => setPickupLocation(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs sm:text-sm font-medium text-charcoal-800 focus:ring-2 focus:ring-brand-600 min-h-[48px]"
-                  >
-                    {SRI_LANKA_LOCATIONS.map((loc) => (
-                      <option key={loc} value={loc}>
-                        {loc}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <BookingLocationSelect
+                  label={locationConfig.startLabel}
+                  value={pickupLocation}
+                  options={locationOptions}
+                  onChange={updatePickupLocation}
+                />
 
-                <div>
-                  <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-brand-600" />
-                    <span>Drop-off Location</span>
-                  </label>
-                  <select
-                    value={dropoffLocation}
-                    onChange={(e) => setDropoffLocation(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs sm:text-sm font-medium text-charcoal-800 focus:ring-2 focus:ring-brand-600 min-h-[48px]"
-                  >
-                    {SRI_LANKA_LOCATIONS.map((loc) => (
-                      <option key={loc} value={loc}>
-                        {loc}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <BookingLocationSelect
+                  label={locationConfig.endLabel}
+                  value={dropoffLocation}
+                  options={locationOptions}
+                  onChange={updateDropoffLocation}
+                />
               </div>
 
               {/* Dates & Times */}
@@ -667,7 +677,7 @@ export const BookingPage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-charcoal-700">
                   <div>
-                    <span className="text-gray-500 block">Pickup:</span>
+                    <span className="text-gray-500 block">{locationConfig.startLabel}:</span>
                     <span className="font-bold">{pickupLocation}</span>
                     <span className="text-[11px] text-gray-500 block">
                       {new Date(pickupDateTime).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -675,7 +685,7 @@ export const BookingPage = () => {
                   </div>
 
                   <div>
-                    <span className="text-gray-500 block">Drop-off:</span>
+                    <span className="text-gray-500 block">{locationConfig.endLabel}:</span>
                     <span className="font-bold">{dropoffLocation}</span>
                     <span className="text-[11px] text-gray-500 block">
                       {new Date(returnDateTime).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
