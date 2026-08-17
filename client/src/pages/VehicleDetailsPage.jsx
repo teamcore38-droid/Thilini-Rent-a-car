@@ -19,6 +19,7 @@ import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { vehicleService } from '../services/vehicleService';
 import { VehicleCard } from '../components/common/VehicleCard';
 import { useSettings } from '../context/SettingsContext';
+import { getOptimizedImageUrl, ImagePresets } from '../utils/imageOptimizer';
 
 export const VehicleDetailsPage = () => {
   const { slug } = useParams();
@@ -146,9 +147,11 @@ export const VehicleDetailsPage = () => {
             {/* Main Active Image */}
             <div className="relative aspect-[16/10] bg-charcoal-900 rounded-2xl overflow-hidden border border-gray-200 shadow-md">
               <img
-                src={currentImage}
+                src={getOptimizedImageUrl(currentImage, ImagePresets.heroGallery)}
                 alt={vehicle.name}
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
               <span className="absolute top-4 left-4 px-3 py-1 bg-white/95 text-charcoal-900 font-extrabold text-xs rounded-lg uppercase tracking-wider shadow-sm backdrop-blur-sm">
                 {vehicle.category}
@@ -161,20 +164,29 @@ export const VehicleDetailsPage = () => {
             {/* Thumbnail Carousel / List */}
             {images.length > 1 && (
               <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative w-24 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
-                      selectedImageIndex === idx
-                        ? 'border-brand-600 ring-2 ring-brand-600/30'
-                        : 'border-gray-200 opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    <img src={img.url} alt={img.alt || vehicle.name} className="w-full h-full object-cover" />
-                  </button>
-                ))}
+                {images.map((img, idx) => {
+                  const imgUrl = typeof img === 'string' ? img : img.url;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedImageIndex(idx)}
+                      className={`relative w-24 h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all ${
+                        selectedImageIndex === idx
+                          ? 'border-brand-600 ring-2 ring-brand-600/30'
+                          : 'border-gray-200 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img
+                        src={getOptimizedImageUrl(imgUrl, ImagePresets.thumbnail)}
+                        alt={img.alt || `${vehicle.name} Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             )}
 

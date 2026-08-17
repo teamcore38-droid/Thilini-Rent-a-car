@@ -23,6 +23,7 @@ import vehicleRoutes from './routes/vehicleRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import contentRoutes from './routes/contentRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -84,6 +85,7 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Compatibility direct routes
 app.use('/api/services', (req, res, next) => {

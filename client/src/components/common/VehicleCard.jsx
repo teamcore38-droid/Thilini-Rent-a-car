@@ -3,16 +3,19 @@ import { Link } from 'react-router-dom';
 import { Users, Fuel, Gauge, Wind, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
+import { getOptimizedImageUrl, ImagePresets } from '../../utils/imageOptimizer';
 
 export const VehicleCard = ({ vehicle }) => {
   const { formatCurrency, getWhatsAppUrl } = useSettings();
 
   if (!vehicle) return null;
 
-  const primaryImage =
+  const rawImage =
     vehicle.images?.find((img) => img.isPrimary)?.url ||
     vehicle.images?.[0]?.url ||
-    'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80';
+    (typeof vehicle.images?.[0] === 'string' ? vehicle.images[0] : null);
+
+  const primaryImage = getOptimizedImageUrl(rawImage, ImagePresets.fleetCard);
 
   const isAvailable = vehicle.status === 'available';
 
@@ -29,6 +32,7 @@ export const VehicleCard = ({ vehicle }) => {
           alt={vehicle.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
 

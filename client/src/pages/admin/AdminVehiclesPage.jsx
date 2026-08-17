@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { vehicleService } from '../../services/vehicleService';
 import { useSettings } from '../../context/SettingsContext';
+import { ImageUploader } from '../../components/common/ImageUploader';
+import { getOptimizedImageUrl } from '../../utils/imageOptimizer';
 
 const CATEGORIES = [
   'Economy',
@@ -58,8 +60,8 @@ export const AdminVehiclesPage = () => {
     luggage: 2,
     hasAC: true,
     features: '',
-    imageUrl: '',
-    serviceTypes: ['Self Drive', 'Airport Transfer'],
+    images: [],
+    serviceTypes: ['Self Drive'],
     dailyRate: 10000,
     weeklyRate: 65000,
     monthlyRate: 240000,
@@ -93,22 +95,22 @@ export const AdminVehiclesPage = () => {
       make: '',
       model: '',
       year: new Date().getFullYear(),
-      category: 'Economy',
+      category: 'Compact',
       transmission: 'Automatic',
       fuelType: 'Hybrid',
       seats: 5,
       doors: 4,
       luggage: 2,
       hasAC: true,
-      features: 'Air Conditioning, Touchscreen Audio, Reverse Camera',
-      imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
-      serviceTypes: ['Self Drive', 'Airport Transfer'],
-      dailyRate: 10000,
-      weeklyRate: 65000,
-      monthlyRate: 240000,
+      features: 'Air Conditioning, Reverse Camera, Bluetooth, Power Steering, ABS',
+      images: [],
+      serviceTypes: ['Self Drive', 'With Driver'],
+      dailyRate: 12000,
+      weeklyRate: 78000,
+      monthlyRate: 280000,
       deposit: 25000,
       includedMileagePerDay: 100,
-      excessMileageRate: 75,
+      excessMileageRate: 85,
       status: 'available',
       featured: false
     });
@@ -118,6 +120,12 @@ export const AdminVehiclesPage = () => {
 
   const openEditModal = (vehicle) => {
     setEditingVehicle(vehicle);
+    
+    // Extract image URLs array
+    const existingImages = (vehicle.images || []).map((img) =>
+      typeof img === 'string' ? img : img.url
+    ).filter(Boolean);
+
     setFormData({
       name: vehicle.name,
       make: vehicle.make,
@@ -131,7 +139,7 @@ export const AdminVehiclesPage = () => {
       luggage: vehicle.luggage,
       hasAC: vehicle.hasAC,
       features: vehicle.features?.join(', ') || '',
-      imageUrl: vehicle.images?.[0]?.url || '',
+      images: existingImages,
       serviceTypes: vehicle.serviceTypes || ['Self Drive'],
       dailyRate: vehicle.dailyRate,
       weeklyRate: vehicle.weeklyRate || 0,
@@ -152,18 +160,27 @@ export const AdminVehiclesPage = () => {
     setError('');
 
     try {
+      const formattedImages =
+        formData.images.length > 0
+          ? formData.images.map((url, index) => ({
+              url,
+              alt: `${formData.name} Photo ${index + 1}`,
+              isPrimary: index === 0
+            }))
+          : [
+              {
+                url: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
+                alt: formData.name,
+                isPrimary: true
+              }
+            ];
+
       const payload = {
         ...formData,
         features: formData.features
           ? formData.features.split(',').map((f) => f.trim()).filter(Boolean)
           : [],
-        images: [
-          {
-            url: formData.imageUrl || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80',
-            alt: formData.name,
-            isPrimary: true
-          }
-        ]
+        images: formattedImages
       };
 
       if (editingVehicle) {
@@ -209,7 +226,7 @@ export const AdminVehiclesPage = () => {
             Fleet Management
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Add new models, configure daily/weekly rates, deposits, and availability status.
+            Add models, upload photos to Cloudinary, configure rates, deposits, and availability status.
           </p>
         </div>
         <button
@@ -263,9 +280,10 @@ export const AdminVehiclesPage = () => {
                     <td className="p-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={v.images?.[0]?.url || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=100&q=80'}
+                          src={getOptimizedImageUrl(v.images?.[0]?.url, { width: 120, height: 90, crop: 'fill' })}
                           alt={v.name}
-                          className="w-12 h-9 rounded-lg object-cover bg-gray-100"
+                          className="w-12 h-9 rounded-lg object-cover bg-gray-100 border border-gray-200"
+                          loading="lazy"
                         />
                         <div>
                           <span className="font-bold block text-charcoal-900">{v.name}</span>
@@ -325,7 +343,7 @@ export const AdminVehiclesPage = () => {
                           type="button"
                           onClick={() => handleDelete(v._id)}
                           className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600"
-                          title="Archive Vehicle"
+                          title="Archive"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -339,35 +357,39 @@ export const AdminVehiclesPage = () => {
         )}
       </div>
 
-      {/* Add / Edit Vehicle Modal */}
+      {/* Add / Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-gray-100">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <h2 className="text-lg font-extrabold text-charcoal-900">
-                {editingVehicle ? 'Edit Vehicle Details' : 'Add New Vehicle to Fleet'}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+              <div>
+                <h3 className="text-lg font-extrabold text-charcoal-900">
+                  {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle to Fleet'}
+                </h3>
+                <p className="text-xs text-gray-500">Configure vehicle specifications and rates.</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-charcoal-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {error && (
-              <div className="my-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2 text-xs text-red-700">
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleFormSubmit} className="space-y-4 pt-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
+            <form onSubmit={handleFormSubmit} className="space-y-6 text-xs">
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-3">
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Display Name *
+                    Vehicle Display Name *
                   </label>
                   <input
                     type="text"
@@ -378,6 +400,7 @@ export const AdminVehiclesPage = () => {
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
                   />
                 </div>
+
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
                     Make *
@@ -387,10 +410,11 @@ export const AdminVehiclesPage = () => {
                     required
                     value={formData.make}
                     onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-                    placeholder="e.g. Toyota, Suzuki"
+                    placeholder="Toyota"
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
                   />
                 </div>
+
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
                     Model *
@@ -400,13 +424,11 @@ export const AdminVehiclesPage = () => {
                     required
                     value={formData.model}
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    placeholder="e.g. Aqua, Alto"
+                    placeholder="Aqua"
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
                     Year *
@@ -419,9 +441,13 @@ export const AdminVehiclesPage = () => {
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
                   />
                 </div>
+              </div>
+
+              {/* Specs */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Category *
+                    Category
                   </label>
                   <select
                     value={formData.category}
@@ -433,9 +459,10 @@ export const AdminVehiclesPage = () => {
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Transmission *
+                    Transmission
                   </label>
                   <select
                     value={formData.transmission}
@@ -447,9 +474,10 @@ export const AdminVehiclesPage = () => {
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Fuel Type *
+                    Fuel Type
                   </label>
                   <select
                     value={formData.fuelType}
@@ -461,71 +489,100 @@ export const AdminVehiclesPage = () => {
                     ))}
                   </select>
                 </div>
-              </div>
 
-              {/* Rates Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 border-t border-gray-100">
                 <div>
                   <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Daily Rate (LKR) *
+                    Seats
                   </label>
                   <input
                     type="number"
-                    required
-                    value={formData.dailyRate}
-                    onChange={(e) => setFormData({ ...formData, dailyRate: parseFloat(e.target.value) })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-bold text-brand-600"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Weekly Rate (LKR)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.weeklyRate}
-                    onChange={(e) => setFormData({ ...formData, weeklyRate: parseFloat(e.target.value) })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Deposit (LKR)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.deposit}
-                    onChange={(e) => setFormData({ ...formData, deposit: parseFloat(e.target.value) })}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                    Excess/km (LKR)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.excessMileageRate}
-                    onChange={(e) => setFormData({ ...formData, excessMileageRate: parseFloat(e.target.value) })}
+                    value={formData.seats}
+                    onChange={(e) => setFormData({ ...formData, seats: parseInt(e.target.value, 10) })}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
                   />
                 </div>
               </div>
 
-              {/* Image URL & Features */}
-              <div>
-                <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
-                  Primary Image URL
-                </label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
+              {/* Rates */}
+              <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200 space-y-3">
+                <h4 className="font-extrabold text-charcoal-900 uppercase tracking-wider text-[11px]">
+                  Pricing & Policy (LKR)
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Daily Rate (LKR) *</label>
+                    <input
+                      type="number"
+                      required
+                      value={formData.dailyRate}
+                      onChange={(e) => setFormData({ ...formData, dailyRate: parseFloat(e.target.value) })}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-bold text-brand-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Weekly Rate (LKR)</label>
+                    <input
+                      type="number"
+                      value={formData.weeklyRate}
+                      onChange={(e) => setFormData({ ...formData, weeklyRate: parseFloat(e.target.value) })}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Monthly Rate (LKR)</label>
+                    <input
+                      type="number"
+                      value={formData.monthlyRate}
+                      onChange={(e) => setFormData({ ...formData, monthlyRate: parseFloat(e.target.value) })}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Refundable Deposit</label>
+                    <input
+                      type="number"
+                      value={formData.deposit}
+                      onChange={(e) => setFormData({ ...formData, deposit: parseFloat(e.target.value) })}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Free Km/Day</label>
+                    <input
+                      type="number"
+                      value={formData.includedMileagePerDay}
+                      onChange={(e) => setFormData({ ...formData, includedMileagePerDay: parseInt(e.target.value, 10) })}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Excess Km (LKR)</label>
+                    <input
+                      type="number"
+                      value={formData.excessMileageRate}
+                      onChange={(e) => setFormData({ ...formData, excessMileageRate: parseFloat(e.target.value) })}
+                      className="w-full bg-white border border-gray-200 rounded-xl p-2.5 font-medium"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Cloudinary Image Uploader */}
+              <div className="pt-2">
+                <ImageUploader
+                  images={formData.images}
+                  onChange={(newImages) => setFormData({ ...formData, images: newImages })}
+                  folder="thilini_rent_a_car/vehicles"
+                  maxImages={8}
                 />
               </div>
 
+              {/* Features */}
               <div>
                 <label className="block font-bold text-charcoal-800 uppercase tracking-wider mb-1">
                   Features (Comma Separated)
@@ -534,7 +591,7 @@ export const AdminVehiclesPage = () => {
                   type="text"
                   value={formData.features}
                   onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                  placeholder="Air Conditioning, Reverse Camera, Push Start, Bluetooth"
+                  placeholder="Air Conditioning, Reverse Camera, Push Start, Bluetooth, ABS"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 font-medium"
                 />
               </div>
@@ -573,14 +630,14 @@ export const AdminVehiclesPage = () => {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 font-bold"
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 font-bold hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold shadow-md"
+                  className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-xl font-bold shadow-md transition-all disabled:opacity-50"
                 >
                   {submitting ? 'Saving...' : editingVehicle ? 'Update Vehicle' : 'Create Vehicle'}
                 </button>
