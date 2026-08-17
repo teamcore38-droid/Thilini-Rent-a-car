@@ -96,10 +96,10 @@ export const BookingSearchWidget = ({ className = '' }) => {
       </div>
 
       <form onSubmit={handleSearch} className="space-y-3 sm:space-y-4">
-        {/* Grid: 2 columns on mobile so dates sit side-by-side, 5 columns on desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
-          {/* 1. Service Type - Full width on mobile */}
-          <div className="col-span-2 sm:col-span-1 lg:col-span-1">
+        {/* Stack fields on phones so native date pickers stay inside the viewport. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
+          {/* 1. Service Type */}
+          <div className="col-span-1">
             <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5">
               Service Type
             </label>
@@ -116,8 +116,8 @@ export const BookingSearchWidget = ({ className = '' }) => {
             </select>
           </div>
 
-          {/* 2. Pickup Location - Full width on mobile */}
-          <div className="col-span-2 sm:col-span-1 lg:col-span-1">
+          {/* 2. Pickup Location */}
+          <div className="col-span-1">
             <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-brand-600" />
               <span>Pickup Location</span>
@@ -135,8 +135,8 @@ export const BookingSearchWidget = ({ className = '' }) => {
             </select>
           </div>
 
-          {/* 3. Pickup Date - Side by side on mobile */}
-          <div className="col-span-1 lg:col-span-1">
+          {/* 3. Pickup Date */}
+          <div className="col-span-1 min-w-0">
             <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-brand-600" />
               <span>Pickup Date</span>
@@ -149,13 +149,13 @@ export const BookingSearchWidget = ({ className = '' }) => {
                 setPickupDate(e.target.value);
                 setDateError('');
               }}
-              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-2.5 sm:px-3.5 py-3 min-h-[44px] font-medium"
+              className="block w-full min-w-0 max-w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-2.5 sm:px-3.5 py-3 min-h-[44px] font-medium"
               required
             />
           </div>
 
-          {/* 4. Return Date - Side by side on mobile */}
-          <div className="col-span-1 lg:col-span-1">
+          {/* 4. Return Date */}
+          <div className="col-span-1 min-w-0">
             <label className="block text-xs font-bold text-charcoal-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-brand-600" />
               <span>Return Date</span>
@@ -168,7 +168,7 @@ export const BookingSearchWidget = ({ className = '' }) => {
                 setReturnDate(e.target.value);
                 setDateError('');
               }}
-              className="w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-2.5 sm:px-3.5 py-3 min-h-[44px] font-medium"
+              className="block w-full min-w-0 max-w-full bg-white border border-gray-200 text-charcoal-900 text-xs sm:text-sm rounded-xl focus:ring-2 focus:ring-brand-600 focus:border-brand-600 px-2.5 sm:px-3.5 py-3 min-h-[44px] font-medium"
               required
             />
           </div>
