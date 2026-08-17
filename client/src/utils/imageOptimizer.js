@@ -49,8 +49,8 @@ export const getOptimizedImageUrl = (url, options = {}) => {
 
     const transformationString = transformParts.join(',');
 
-    // Avoid double transformation injection
-    if (cleanUrl.includes('/upload/f_auto') || cleanUrl.includes('/upload/q_auto')) {
+    // Avoid injecting the exact same transformation more than once.
+    if (cleanUrl.includes(`/upload/${transformationString}/`)) {
       return cleanUrl;
     }
 
@@ -73,6 +73,16 @@ export const getOptimizedImageUrl = (url, options = {}) => {
   }
 
   return cleanUrl;
+};
+
+export const getResponsiveImageSrcSet = (url, preset, widths = []) => {
+  if (!url || widths.length === 0) return undefined;
+  const ratio = preset.width && preset.height ? preset.height / preset.width : null;
+  const candidates = widths.map((width) => {
+    const height = ratio ? Math.round(width * ratio) : undefined;
+    return `${getOptimizedImageUrl(url, { ...preset, width, height })} ${width}w`;
+  });
+  return [...new Set(candidates)].join(', ');
 };
 
 /**

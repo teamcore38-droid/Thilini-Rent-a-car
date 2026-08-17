@@ -85,8 +85,8 @@ export const HomePage = () => {
             {loading ? (
               [...Array(6)].map((_, i) => <VehicleCardSkeleton key={i} />)
             ) : featuredVehicles.length > 0 ? (
-              featuredVehicles.slice(0, 6).map((vehicle) => (
-                <VehicleCard key={vehicle._id} vehicle={vehicle} />
+              featuredVehicles.slice(0, 6).map((vehicle, index) => (
+                <VehicleCard key={vehicle._id} vehicle={vehicle} priority={index < 3} />
               ))
             ) : (
               <div className="col-span-full text-center py-12 bg-gray-50 rounded-2xl border border-gray-200">

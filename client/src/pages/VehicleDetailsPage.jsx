@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Car,
@@ -12,8 +12,38 @@ import {
 import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { vehicleService } from '../services/vehicleService';
 import { VehicleCard } from '../components/common/VehicleCard';
+import { VehicleCardSkeleton } from '../components/common/VehicleCardSkeleton';
 import { useSettings } from '../context/SettingsContext';
-import { getOptimizedImageUrl, ImagePresets } from '../utils/imageOptimizer';
+import {
+  getOptimizedImageUrl,
+  getResponsiveImageSrcSet,
+  ImagePresets
+} from '../utils/imageOptimizer';
+
+const VehicleHighlights = ({ features, className = '', layoutSection }) => {
+  if (!features?.length) return null;
+
+  return (
+    <div
+      className={`bg-white rounded-2xl p-6 border border-gray-200 shadow-subtle ${className}`}
+      data-layout-section={layoutSection}
+    >
+      <h3 className="font-bold text-sm text-charcoal-900 uppercase tracking-wider mb-4">
+        Vehicle Highlights &amp; Inclusions
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-charcoal-700">
+        {features.map((feature, index) => (
+          <div key={index} className="flex items-center gap-2.5 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+            <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+              <Check className="w-3.5 h-3.5" />
+            </div>
+            <span className="font-medium">{feature}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export const VehicleDetailsPage = () => {
   const { slug } = useParams();
@@ -25,6 +55,12 @@ export const VehicleDetailsPage = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [similarLoading, setSimilarLoading] = useState(false);
+  const [similarError, setSimilarError] = useState(null);
+  const [primaryRetry, setPrimaryRetry] = useState(0);
+  const [similarRetry, setSimilarRetry] = useState(0);
+  const primaryRequestSequence = useRef(0);
+  const similarRequestSequence = useRef(0);
 
   // Quick calculation state
   const pickupDate = '';
@@ -33,16 +69,23 @@ export const VehicleDetailsPage = () => {
   const pickupLocation = 'Bandaranaike International Airport (CMB - Katunayake)';
 
   useEffect(() => {
+    const controller = new AbortController();
+    const requestSequence = ++primaryRequestSequence.current;
+
     const fetchVehicleData = async () => {
       setLoading(true);
       setError(null);
+      setVehicle(null);
+      setSimilarVehicles([]);
+      setSimilarError(null);
       try {
-        const [vehicleRes, similarRes] = await Promise.all([
-          vehicleService.getVehicleBySlug(slug),
-          vehicleService.getSimilarVehicles(slug).catch(() => ({ vehicles: [] }))
-        ]);
+        const vehicleRes = await vehicleService.getVehicleBySlug(slug, {
+          signal: controller.signal
+        });
 
-        if (vehicleRes?.vehicle) {
+        if (requestSequence !== primaryRequestSequence.current || controller.signal.aborted) return;
+
+        if (vehicleRes?.vehicle?.slug === slug) {
           setVehicle(vehicleRes.vehicle);
           setSelectedImageIndex(0);
           if (vehicleRes.vehicle.serviceTypes?.[0]) {
@@ -51,19 +94,53 @@ export const VehicleDetailsPage = () => {
         } else {
           setError('Vehicle not found.');
         }
-
-        setSimilarVehicles(similarRes?.vehicles || []);
       } catch (err) {
-        console.error('Error loading vehicle details:', err);
-        setError('Vehicle details could not be loaded.');
+        if (err.code !== 'ERR_CANCELED' && requestSequence === primaryRequestSequence.current) {
+          console.error('Error loading vehicle details:', err);
+          setError(err.userMessage || 'Vehicle details could not be loaded. Please try again.');
+        }
       } finally {
-        setLoading(false);
+        if (requestSequence === primaryRequestSequence.current && !controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchVehicleData();
     window.scrollTo(0, 0);
-  }, [slug]);
+    return () => controller.abort();
+  }, [slug, primaryRetry]);
+
+  useEffect(() => {
+    if (!vehicle?.category || vehicle.slug !== slug) return undefined;
+
+    const controller = new AbortController();
+    const requestSequence = ++similarRequestSequence.current;
+
+    const fetchSimilarVehicles = async () => {
+      setSimilarLoading(true);
+      setSimilarError(null);
+      try {
+        const response = await vehicleService.getSimilarVehicles(vehicle.category, slug, {
+          signal: controller.signal
+        });
+        if (requestSequence === similarRequestSequence.current && !controller.signal.aborted) {
+          setSimilarVehicles(response?.vehicles || []);
+        }
+      } catch (err) {
+        if (err.code !== 'ERR_CANCELED' && requestSequence === similarRequestSequence.current) {
+          setSimilarError('Similar vehicles could not be loaded right now.');
+        }
+      } finally {
+        if (requestSequence === similarRequestSequence.current && !controller.signal.aborted) {
+          setSimilarLoading(false);
+        }
+      }
+    };
+
+    fetchSimilarVehicles();
+    return () => controller.abort();
+  }, [vehicle?.category, vehicle?.slug, slug, similarRetry]);
 
   if (loading) {
     return (
@@ -81,16 +158,25 @@ export const VehicleDetailsPage = () => {
       <div className="min-h-screen bg-gray-50 py-20 px-4">
         <div className="max-w-md mx-auto bg-white rounded-2xl p-8 text-center border border-gray-200 shadow-subtle">
           <Car className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-charcoal-900">Vehicle Not Found</h2>
+          <h2 className="text-lg font-bold text-charcoal-900">Vehicle details unavailable</h2>
           <p className="text-xs text-gray-500 mt-1 mb-6">
-            The vehicle you are looking for may have been updated or is currently unavailable.
+            {error || 'The vehicle you are looking for may have been updated or is currently unavailable.'}
           </p>
-          <Link
-            to="/fleet"
-            className="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700"
-          >
-            Browse All Fleet
-          </Link>
+          <div className="flex flex-col sm:flex-row justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPrimaryRetry((value) => value + 1)}
+              className="inline-flex items-center justify-center px-6 py-2.5 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700"
+            >
+              Try Again
+            </button>
+            <Link
+              to="/fleet"
+              className="inline-flex items-center justify-center px-6 py-2.5 bg-gray-100 text-charcoal-800 rounded-xl text-xs font-bold hover:bg-gray-200"
+            >
+              Browse All Fleet
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -142,9 +228,18 @@ export const VehicleDetailsPage = () => {
             <div className="relative aspect-[16/10] bg-charcoal-900 rounded-2xl overflow-hidden border border-gray-200 shadow-md">
               <img
                 src={getOptimizedImageUrl(currentImage, ImagePresets.heroGallery)}
+                srcSet={getResponsiveImageSrcSet(
+                  currentImage,
+                  ImagePresets.heroGallery,
+                  [480, 768, 960, 1200]
+                )}
+                sizes="(max-width: 1023px) 100vw, 58vw"
                 alt={vehicle.name}
                 className="w-full h-full object-cover"
+                width="1200"
+                height="800"
                 loading="eager"
+                fetchPriority="high"
                 decoding="async"
               />
               <span className="absolute top-4 left-4 px-3 py-1 bg-white/95 text-charcoal-900 font-extrabold text-xs rounded-lg uppercase tracking-wider shadow-sm backdrop-blur-sm">
@@ -184,28 +279,16 @@ export const VehicleDetailsPage = () => {
               </div>
             )}
 
-            {/* Key Features List */}
-            {vehicle.features && vehicle.features.length > 0 && (
-              <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-subtle mt-6">
-                <h3 className="font-bold text-sm text-charcoal-900 uppercase tracking-wider mb-4">
-                  Vehicle Highlights & Inclusions
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-charcoal-700">
-                  {vehicle.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2.5 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                        <Check className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="font-medium">{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Desktop highlights remain below the gallery. */}
+            <VehicleHighlights
+              features={vehicle.features}
+              className="hidden lg:block mt-6"
+              layoutSection="desktop-highlights"
+            />
           </div>
 
           {/* Pricing & Booking Action Box (5 cols) */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5" data-layout-section="summary">
             <div className="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-card sticky top-24 space-y-6">
               {/* Title & Subtitle */}
               <div>
@@ -309,7 +392,12 @@ export const VehicleDetailsPage = () => {
         </div>
 
         {/* Comprehensive Specifications Matrix */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-subtle mb-12">
+        <div
+          className={`bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-subtle ${
+            vehicle.features?.length ? 'mb-6 lg:mb-12' : 'mb-12'
+          }`}
+          data-layout-section="technical-specifications"
+        >
           <h2 className="text-xl font-extrabold text-charcoal-900 mb-6">
             Detailed Technical Specifications
           </h2>
@@ -363,9 +451,17 @@ export const VehicleDetailsPage = () => {
           </div>
         </div>
 
-        {/* Similar Vehicles Carousel / Grid */}
-        {similarVehicles.length > 0 && (
-          <div className="mb-12">
+        {/* Mobile highlights follow the summary and detailed specifications. */}
+        <VehicleHighlights
+          features={vehicle.features}
+          className="lg:hidden mb-12"
+          layoutSection="mobile-highlights"
+        />
+
+        {/* Similar vehicles load independently from the primary vehicle. */}
+        <div className="mb-12" data-loading-state={similarLoading ? 'loading' : 'complete'}>
+          {(similarLoading || similarError || similarVehicles.length > 0) && (
+            <>
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-extrabold text-charcoal-900">
                 Similar Vehicles in {vehicle.category}
@@ -374,13 +470,31 @@ export const VehicleDetailsPage = () => {
                 View All Fleet
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {similarVehicles.map((sim) => (
-                <VehicleCard key={sim._id} vehicle={sim} />
-              ))}
-            </div>
-          </div>
-        )}
+            {similarLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, index) => <VehicleCardSkeleton key={index} />)}
+              </div>
+            ) : similarError ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-center">
+                <p className="text-xs font-semibold text-amber-900">{similarError}</p>
+                <button
+                  type="button"
+                  onClick={() => setSimilarRetry((value) => value + 1)}
+                  className="mt-3 rounded-lg bg-white px-4 py-2 text-xs font-bold text-charcoal-800 border border-amber-200"
+                >
+                  Retry Similar Vehicles
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {similarVehicles.map((sim) => (
+                  <VehicleCard key={sim._id} vehicle={sim} />
+                ))}
+              </div>
+            )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 
@@ -29,11 +29,17 @@ const SettingsContext = createContext();
 export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(defaultSettings);
   const [loading, setLoading] = useState(true);
+  const activeRequest = useRef(null);
 
   const fetchSettings = async () => {
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const timeoutId = window.setTimeout(() => controller.abort(), 7000);
     try {
       const response = await fetch(`${API_BASE_URL}/settings`, {
-        headers: { Accept: 'application/json' }
+        headers: { Accept: 'application/json' },
+        signal: controller.signal
       });
       if (!response.ok) throw new Error(`Settings request failed with ${response.status}`);
       const data = await response.json();
@@ -43,12 +49,17 @@ export const SettingsProvider = ({ children }) => {
     } catch {
       // Use fallback defaults
     } finally {
-      setLoading(false);
+      window.clearTimeout(timeoutId);
+      if (activeRequest.current === controller) {
+        activeRequest.current = null;
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchSettings();
+    return () => activeRequest.current?.abort();
   }, []);
 
   const updateSettings = async (newData) => {

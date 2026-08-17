@@ -3,15 +3,16 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SettingsProvider } from './context/SettingsContext';
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { PublicLayout } from './components/layout/PublicLayout';
+import { prefetchFleetPage, prefetchVehicleDetailsPage } from './utils/routePrefetch';
 
 const lazyNamed = (loader, exportName) =>
   lazy(() => loader().then((module) => ({ default: module[exportName] })));
 
 // Route-level chunks keep pages that are not being viewed out of the initial download.
 const HomePage = lazyNamed(() => import('./pages/HomePage'), 'HomePage');
-const FleetPage = lazyNamed(() => import('./pages/FleetPage'), 'FleetPage');
+const FleetPage = lazyNamed(prefetchFleetPage, 'FleetPage');
 const VehicleDetailsPage = lazyNamed(
-  () => import('./pages/VehicleDetailsPage'),
+  prefetchVehicleDetailsPage,
   'VehicleDetailsPage'
 );
 const ServicesPage = lazyNamed(() => import('./pages/ServicesPage'), 'ServicesPage');

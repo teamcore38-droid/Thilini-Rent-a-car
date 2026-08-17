@@ -7,6 +7,21 @@ import { useSettings } from '../../context/SettingsContext';
 import heroDesktopImg from '../../assets/hero-desktop.webp';
 import heroMobileImg from '../../assets/hero-mobile.webp';
 
+const preloadHomeHero = () => {
+  if (typeof document === 'undefined') return;
+  const id = 'trc-home-hero-preload';
+  if (document.getElementById(id)) return;
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'preload';
+  link.as = 'image';
+  link.fetchPriority = 'high';
+  link.href = window.matchMedia('(min-width: 768px)').matches ? heroDesktopImg : heroMobileImg;
+  document.head.appendChild(link);
+};
+
+preloadHomeHero();
+
 export const HeroSection = () => {
   const { getWhatsAppUrl } = useSettings();
 

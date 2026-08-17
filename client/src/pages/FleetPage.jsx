@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Search,
@@ -10,8 +10,9 @@ import {
 } from 'lucide-react';
 import { VehicleCard } from '../components/common/VehicleCard';
 import { VehicleCardSkeleton } from '../components/common/VehicleCardSkeleton';
-import { vehicleService } from '../services/vehicleService';
+import { vehicleService, withVehicleCacheVersion } from '../services/vehicleService';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { getFleetCacheEntry } from '../services/fleetCache';
 
 const CATEGORIES = [
   'Economy',
@@ -53,59 +54,32 @@ export const FleetPage = () => {
   const [vehicles, setVehicles] = useState([]);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(Math.max(1, Number(searchParams.get('page')) || 1));
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [retryNonce, setRetryNonce] = useState(0);
+  const requestSequence = useRef(0);
+  const vehiclesRef = useRef(vehicles);
+  vehiclesRef.current = vehicles;
   const debouncedSearch = useDebouncedValue(search, 300);
   const debouncedMinPrice = useDebouncedValue(minPrice, 300);
   const debouncedMaxPrice = useDebouncedValue(maxPrice, 300);
 
-  // Sync state to URL and fetch vehicles
-  useEffect(() => {
-    const controller = new AbortController();
-    let active = true;
-
-    const fetchFleet = async () => {
-      setLoading(true);
-      setError(null);
-
-      const params = {};
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (selectedCategory) params.category = selectedCategory;
-      if (selectedTransmission) params.transmission = selectedTransmission;
-      if (selectedFuel) params.fuelType = selectedFuel;
-      if (selectedService) params.serviceType = selectedService;
-      if (selectedSeats) params.seats = selectedSeats;
-      if (debouncedMinPrice) params.minPrice = debouncedMinPrice;
-      if (debouncedMaxPrice) params.maxPrice = debouncedMaxPrice;
-      if (sort) params.sort = sort;
-      params.page = page;
-      params.limit = 9;
-
-      try {
-        const data = await vehicleService.getVehicles(params, { signal: controller.signal });
-        if (active) {
-          setVehicles(data.vehicles || []);
-          setTotal(data.total || 0);
-          setTotalPages(data.totalPages || 1);
-        }
-      } catch (err) {
-        if (active && err.code !== 'ERR_CANCELED') {
-          console.error('Error fetching fleet:', err);
-          setError('Failed to load fleet. Please check your connection.');
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchFleet();
-    return () => {
-      active = false;
-      controller.abort();
-    };
+  const fleetParams = useMemo(() => {
+    const params = {};
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (selectedCategory) params.category = selectedCategory;
+    if (selectedTransmission) params.transmission = selectedTransmission;
+    if (selectedFuel) params.fuelType = selectedFuel;
+    if (selectedService) params.serviceType = selectedService;
+    if (selectedSeats) params.seats = selectedSeats;
+    if (debouncedMinPrice) params.minPrice = debouncedMinPrice;
+    if (debouncedMaxPrice) params.maxPrice = debouncedMaxPrice;
+    if (sort) params.sort = sort;
+    params.page = page;
+    params.limit = 9;
+    return params;
   }, [
     debouncedSearch,
     selectedCategory,
@@ -118,6 +92,63 @@ export const FleetPage = () => {
     sort,
     page
   ]);
+  const cacheableFleetParams = useMemo(() => withVehicleCacheVersion(fleetParams), [fleetParams]);
+
+  // Reuse cached results, retain existing cards, and refresh without blocking the grid.
+  useEffect(() => {
+    const controller = new AbortController();
+    const sequence = ++requestSequence.current;
+    const cached = getFleetCacheEntry(cacheableFleetParams);
+    const hasUsableData = Boolean(cached) || vehiclesRef.current.length > 0;
+
+    if (cached) {
+      setVehicles(cached.data.vehicles || []);
+      setTotal(cached.data.total || 0);
+      setTotalPages(cached.data.totalPages || 1);
+      setLoading(false);
+      setError(null);
+      if (cached.isFresh && retryNonce === 0) {
+        setRefreshing(false);
+        return () => controller.abort();
+      }
+    } else {
+      setLoading(!hasUsableData);
+      setRefreshing(hasUsableData);
+    }
+
+    const fetchFleet = async () => {
+      if (hasUsableData) setRefreshing(true);
+      setError(null);
+
+      try {
+        const data = await vehicleService.getVehicles(cacheableFleetParams, {
+          signal: controller.signal,
+          force: Boolean(cached && !cached.isFresh) || retryNonce > 0
+        });
+        if (sequence === requestSequence.current && !controller.signal.aborted) {
+          setVehicles(data.vehicles || []);
+          setTotal(data.total || 0);
+          setTotalPages(data.totalPages || 1);
+          if (retryNonce > 0) setRetryNonce(0);
+        }
+      } catch (err) {
+        if (sequence === requestSequence.current && err.code !== 'ERR_CANCELED') {
+          console.error('Error fetching fleet:', err);
+          setError(err.userMessage || 'Vehicles are temporarily unavailable. Please try again in a moment.');
+        }
+      } finally {
+        if (sequence === requestSequence.current && !controller.signal.aborted) {
+          setLoading(false);
+          setRefreshing(false);
+        }
+      }
+    };
+
+    fetchFleet();
+    return () => {
+      controller.abort();
+    };
+  }, [cacheableFleetParams, retryNonce]);
 
   // Update URL parameters
   const updateUrlParams = (newParams) => {
@@ -129,6 +160,7 @@ export const FleetPage = () => {
         nextParams.delete(key);
       }
     });
+    if (!Object.hasOwn(newParams, 'page')) nextParams.delete('page');
     setSearchParams(nextParams, { replace: true });
   };
 
@@ -451,6 +483,12 @@ export const FleetPage = () => {
               <span className="text-xs font-bold text-charcoal-600">
                 Showing {vehicles.length} of {total} vehicles
               </span>
+              {refreshing && (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand-600" role="status">
+                  <span className="h-3 w-3 rounded-full border-2 border-brand-600 border-t-transparent animate-spin" />
+                  Updating vehicles…
+                </span>
+              )}
               {activeFilterCount > 0 && (
                 <button
                   type="button"
@@ -469,12 +507,12 @@ export const FleetPage = () => {
                   <VehicleCardSkeleton key={i} />
                 ))}
               </div>
-            ) : error ? (
+            ) : error && vehicles.length === 0 ? (
               <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
                 <p className="text-sm font-bold text-red-800">{error}</p>
                 <button
                   type="button"
-                  onClick={() => window.location.reload()}
+                  onClick={() => setRetryNonce((value) => value + 1)}
                   className="mt-3 px-4 py-2 bg-brand-600 text-white rounded-lg text-xs font-bold"
                 >
                   Try Again
@@ -503,9 +541,21 @@ export const FleetPage = () => {
               </div>
             ) : (
               <>
+                {error && (
+                  <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p className="text-xs font-semibold text-amber-900">{error}</p>
+                    <button
+                      type="button"
+                      onClick={() => setRetryNonce((value) => value + 1)}
+                      className="shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-charcoal-800 border border-amber-200"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {vehicles.map((vehicle) => (
-                    <VehicleCard key={vehicle._id} vehicle={vehicle} />
+                  {vehicles.map((vehicle, index) => (
+                    <VehicleCard key={vehicle._id} vehicle={vehicle} priority={index < 3} />
                   ))}
                 </div>
 
@@ -515,7 +565,11 @@ export const FleetPage = () => {
                     <button
                       type="button"
                       disabled={page <= 1}
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      onClick={() => {
+                        const nextPage = Math.max(1, page - 1);
+                        setPage(nextPage);
+                        updateUrlParams({ page: nextPage > 1 ? nextPage : '' });
+                      }}
                       className="px-4 py-2 rounded-lg border border-gray-200 text-xs font-bold disabled:opacity-40 hover:bg-gray-50 min-h-[44px]"
                     >
                       Previous
@@ -526,7 +580,11 @@ export const FleetPage = () => {
                     <button
                       type="button"
                       disabled={page >= totalPages}
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() => {
+                        const nextPage = Math.min(totalPages, page + 1);
+                        setPage(nextPage);
+                        updateUrlParams({ page: nextPage > 1 ? nextPage : '' });
+                      }}
                       className="px-4 py-2 rounded-lg border border-gray-200 text-xs font-bold disabled:opacity-40 hover:bg-gray-50 min-h-[44px]"
                     >
                       Next

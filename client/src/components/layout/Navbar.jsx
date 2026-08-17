@@ -4,6 +4,7 @@ import { Phone, Menu, X, Calendar } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { WhatsAppIcon } from '../common/WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
+import { prefetchFleetPage } from '../../utils/routePrefetch';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -84,6 +85,9 @@ export const Navbar = () => {
                 <NavLink
                   key={link.name}
                   to={link.path}
+                  onMouseEnter={link.path === '/fleet' ? prefetchFleetPage : undefined}
+                  onFocus={link.path === '/fleet' ? prefetchFleetPage : undefined}
+                  onTouchStart={link.path === '/fleet' ? prefetchFleetPage : undefined}
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       isActive
@@ -164,6 +168,7 @@ export const Navbar = () => {
               <NavLink
                 key={link.name}
                 to={link.path}
+                onTouchStart={link.path === '/fleet' ? prefetchFleetPage : undefined}
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-semibold transition-colors min-h-[48px] ${

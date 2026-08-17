@@ -3,14 +3,19 @@ import { Link } from 'react-router-dom';
 import { Users, Fuel, Gauge, Wind, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
-import { getOptimizedImageUrl, ImagePresets } from '../../utils/imageOptimizer';
+import {
+  getOptimizedImageUrl,
+  getResponsiveImageSrcSet,
+  ImagePresets
+} from '../../utils/imageOptimizer';
+import { prefetchVehicleDetailsPage } from '../../utils/routePrefetch';
 import {
   getAdjacentImageIndex,
   getSwipeDirection,
   normalizeVehicleImages
 } from '../../utils/cardGallery';
 
-export const VehicleCard = ({ vehicle }) => {
+export const VehicleCard = ({ vehicle, priority = false }) => {
   const { formatCurrency, getWhatsAppUrl } = useSettings();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const touchStartX = useRef(null);
@@ -73,7 +78,12 @@ export const VehicleCard = ({ vehicle }) => {
       {/* Image Container with Badges */}
       <div
         className="relative aspect-[16/10] overflow-hidden bg-gray-100 touch-pan-y"
-        onTouchStart={handleTouchStart}
+        onMouseEnter={prefetchVehicleDetailsPage}
+        onFocusCapture={prefetchVehicleDetailsPage}
+        onTouchStart={(event) => {
+          prefetchVehicleDetailsPage();
+          handleTouchStart(event);
+        }}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={() => {
@@ -89,9 +99,18 @@ export const VehicleCard = ({ vehicle }) => {
         >
           <img
             src={optimizedImage}
+            srcSet={getResponsiveImageSrcSet(
+              currentImage?.url,
+              ImagePresets.fleetCard,
+              [320, 480, 640, 800]
+            )}
+            sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 30vw"
             alt={currentImage?.alt || vehicle.name}
             className="w-full h-full object-cover select-none group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
+            width="640"
+            height="420"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding="async"
             draggable={false}
           />
