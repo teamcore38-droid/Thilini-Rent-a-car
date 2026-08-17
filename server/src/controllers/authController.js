@@ -58,6 +58,13 @@ export const loginAdmin = async (req, res, next) => {
       }
     });
   } catch (error) {
+    console.error('[Admin Login Error]:', error.message);
+    if (error.name === 'MongooseServerSelectionError' || error.name === 'MongoNetworkError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection in progress. Please retry in a few seconds.'
+      });
+    }
     next(error);
   }
 };

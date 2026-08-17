@@ -1,13 +1,17 @@
 import { Setting } from '../models/Setting.js';
 import { DEFAULT_BUSINESS_SETTINGS } from '../config/constants.js';
 
-// PUBLIC: Get public site settings
+// PUBLIC: Get public site settings (resilient with fallback defaults)
 export const getPublicSettings = async (req, res, next) => {
   try {
-    let settings = await Setting.findOne().lean();
+    let settings = null;
+    try {
+      settings = await Setting.findOne().lean();
+    } catch (dbErr) {
+      console.warn('[Settings Notice]: Using default fallback settings while DB connects:', dbErr.message);
+    }
 
     if (!settings) {
-      // Return fallback defaults if not seeded yet
       settings = DEFAULT_BUSINESS_SETTINGS;
     }
 
@@ -16,7 +20,11 @@ export const getPublicSettings = async (req, res, next) => {
       settings
     });
   } catch (error) {
-    next(error);
+    // Fail-safe: Always return 200 with default business settings to prevent frontend crash
+    res.status(200).json({
+      success: true,
+      settings: DEFAULT_BUSINESS_SETTINGS
+    });
   }
 };
 

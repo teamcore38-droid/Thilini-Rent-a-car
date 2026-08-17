@@ -28,9 +28,13 @@ import uploadRoutes from './routes/uploadRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Ensure DB is connected for serverless invocations
+// Resilient DB connection middleware for serverless invocations
 app.use(async (req, res, next) => {
-  await connectDB();
+  try {
+    await connectDB();
+  } catch (err) {
+    console.warn(`[Database Middleware Notice]: Request ${req.method} ${req.path} proceeding, DB state: ${mongoose.connection.readyState}`);
+  }
   next();
 });
 
@@ -73,8 +77,9 @@ app.get('/api/health', (req, res) => {
     timezone: 'Asia/Colombo',
     database: {
       connected: mongoose.connection.readyState === 1,
-      host: mongoose.connection.host,
-      name: mongoose.connection.name
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host || 'unknown',
+      name: mongoose.connection.name || 'unknown'
     }
   });
 });
