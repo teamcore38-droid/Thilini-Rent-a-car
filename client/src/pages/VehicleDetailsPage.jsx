@@ -5,15 +5,9 @@ import {
   Fuel,
   Gauge,
   Users,
-  Wind,
-  Luggage,
-  Shield,
   Calendar,
   Check,
-  ArrowRight,
-  Info,
-  MapPin,
-  ChevronLeft
+  Info
 } from 'lucide-react';
 import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { vehicleService } from '../services/vehicleService';
@@ -33,10 +27,10 @@ export const VehicleDetailsPage = () => {
   const [error, setError] = useState(null);
 
   // Quick calculation state
-  const [pickupDate, setPickupDate] = useState('');
-  const [returnDate, setReturnDate] = useState('');
+  const pickupDate = '';
+  const returnDate = '';
   const [serviceType, setServiceType] = useState('Self Drive');
-  const [pickupLocation, setPickupLocation] = useState('Bandaranaike International Airport (CMB - Katunayake)');
+  const pickupLocation = 'Bandaranaike International Airport (CMB - Katunayake)';
 
   useEffect(() => {
     const fetchVehicleData = async () => {

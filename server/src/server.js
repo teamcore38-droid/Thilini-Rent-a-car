@@ -8,16 +8,32 @@ import { connectDB } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
-// Route imports
-import authRoutes from './routes/authRoutes.js';
+// Public read routes stay warm; heavier booking/auth/upload code loads only when used.
 import vehicleRoutes from './routes/vehicleRoutes.js';
-import bookingRoutes from './routes/bookingRoutes.js';
 import contentRoutes from './routes/contentRoutes.js';
 import settingRoutes from './routes/settingRoutes.js';
-import uploadRoutes from './routes/uploadRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+const lazyRouter = (loader) => {
+  let routerPromise;
+
+  return async (req, res, next) => {
+    try {
+      routerPromise ||= loader().then((module) => module.default);
+      const router = await routerPromise;
+      return router(req, res, next);
+    } catch (error) {
+      routerPromise = null;
+      return next(error);
+    }
+  };
+};
+
+const authRoutes = lazyRouter(() => import('./routes/authRoutes.js'));
+const bookingRoutes = lazyRouter(() => import('./routes/bookingRoutes.js'));
+const uploadRoutes = lazyRouter(() => import('./routes/uploadRoutes.js'));
 
 // Resilient DB connection middleware
 app.use(async (req, res, next) => {

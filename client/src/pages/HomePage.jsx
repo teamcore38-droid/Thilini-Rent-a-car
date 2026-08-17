@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Car, Key, UserCheck, Plane, HeartHandshake, CalendarDays, Sparkles } from 'lucide-react';
+import { ArrowRight, Car, Key, UserCheck, Plane, HeartHandshake, CalendarDays } from 'lucide-react';
 import { HeroSection } from '../components/home/HeroSection';
 import { TrustStrip } from '../components/common/TrustStrip';
 import { VehicleCard } from '../components/common/VehicleCard';
@@ -9,8 +9,9 @@ import { HowItWorks } from '../components/home/HowItWorks';
 import { WhyChooseUs } from '../components/home/WhyChooseUs';
 import { ReviewsSection } from '../components/home/ReviewsSection';
 import { FaqAccordion } from '../components/home/FaqAccordion';
-import { vehicleService } from '../services/vehicleService';
 import { contentService } from '../services/contentService';
+
+const SERVICE_ICONS = { Key, UserCheck, Plane, HeartHandshake, CalendarDays, Car };
 
 export const HomePage = () => {
   const [featuredVehicles, setFeaturedVehicles] = useState([]);
@@ -20,37 +21,30 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchHomeData = async () => {
       try {
-        const [vehiclesRes, servicesRes, faqsRes, testimonialsRes] = await Promise.all([
-          vehicleService.getFeaturedVehicles().catch(() => ({ vehicles: [] })),
-          contentService.getServices().catch(() => ({ services: [] })),
-          contentService.getFAQs().catch(() => ({ faqs: [] })),
-          contentService.getTestimonials().catch(() => ({ testimonials: [] }))
-        ]);
+        const data = await contentService.getHomeContent({ signal: controller.signal });
 
-        setFeaturedVehicles(vehiclesRes?.vehicles || []);
-        setServices(servicesRes?.services || []);
-        setFaqs(faqsRes?.faqs || []);
-        setTestimonials(testimonialsRes?.testimonials || []);
+        setFeaturedVehicles(data?.vehicles || []);
+        setServices(data?.services || []);
+        setFaqs(data?.faqs || []);
+        setTestimonials(data?.testimonials || []);
       } catch (err) {
-        console.error('Error fetching home data:', err);
+        if (err.code !== 'ERR_CANCELED') {
+          console.error('Error fetching home data:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchHomeData();
+    return () => controller.abort();
   }, []);
-
-  const serviceIcons = {
-    Key: Key,
-    UserCheck: UserCheck,
-    Plane: Plane,
-    HeartHandshake: HeartHandshake,
-    CalendarDays: CalendarDays,
-    Car: Car
-  };
 
   return (
     <main className="min-h-screen">
@@ -140,7 +134,7 @@ export const HomePage = () => {
           {/* Swipeable cards on mobile (< md), responsive grid on desktop (md+) */}
           <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-x-visible snap-x snap-mandatory no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 pb-2 md:pb-0">
             {services.map((srv, idx) => {
-              const IconComp = serviceIcons[srv.iconName] || Car;
+              const IconComp = SERVICE_ICONS[srv.iconName] || Car;
               return (
                 <div
                   key={srv._id || idx}

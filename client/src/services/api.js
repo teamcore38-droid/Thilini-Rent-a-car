@@ -2,17 +2,19 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: 15000
 });
 
 // Request interceptor: attach JWT token if available in localStorage
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('trc_admin_token');
-    if (token) {
+    const requestPath = config.url || '';
+    const needsAdminAuth =
+      /(^|\/)admin(?:\/|$)/.test(requestPath) || requestPath.startsWith('/upload');
+
+    // Public GETs stay credential-free so browsers/CDNs can cache them.
+    if (token && needsAdminAuth) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

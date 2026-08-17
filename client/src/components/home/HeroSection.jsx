@@ -12,28 +12,25 @@ export const HeroSection = () => {
 
   return (
     <div className="relative bg-charcoal-950 text-white">
-      {/* Desktop Hero Background (Visible on md and larger) */}
-      <div className="hidden md:block absolute inset-0 z-0">
-        <img
-          src={heroDesktopImg}
-          alt="Thilini Rent A Car Fleet on Sri Lanka Coastal Highway"
-          className="w-full h-full object-cover object-right lg:object-center"
-          loading="eager"
-        />
-        {/* Dark left gradient to ensure clear text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal-950/70 via-transparent to-black/30" />
-      </div>
-
-      {/* Mobile Hero Background (Visible on < md) */}
-      <div className="block md:hidden absolute inset-0 z-0">
-        <img
-          src={heroMobileImg}
-          alt="Thilini Rent A Car Fleet in Sri Lanka"
-          className="w-full h-full object-cover object-top"
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-charcoal-950/95" />
+      {/* The picture element lets the browser download only the image for this viewport. */}
+      <div className="absolute inset-0 z-0">
+        <picture className="block w-full h-full">
+          <source media="(min-width: 768px)" srcSet={heroDesktopImg} />
+          <img
+            src={heroMobileImg}
+            alt="Thilini Rent A Car Fleet in Sri Lanka"
+            className="w-full h-full object-cover object-top md:object-right lg:object-center"
+            width="752"
+            height="1337"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
+        {/* Responsive overlays preserve the existing mobile and desktop contrast. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-charcoal-950/95 md:hidden" />
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-black/90 via-black/55 to-transparent" />
+        <div className="absolute inset-0 hidden md:block bg-gradient-to-t from-charcoal-950/70 via-transparent to-black/30" />
       </div>
 
       {/* Hero Content Area */}

@@ -9,7 +9,6 @@ import {
   LogOut,
   Menu,
   X,
-  Shield,
   ExternalLink
 } from 'lucide-react';
 import { Logo } from '../../components/common/Logo';

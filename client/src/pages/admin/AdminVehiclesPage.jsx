@@ -4,12 +4,9 @@ import {
   Plus,
   Edit2,
   Trash2,
-  Check,
   X,
   Star,
-  Wrench,
-  AlertCircle,
-  Image as ImageIcon
+  AlertCircle
 } from 'lucide-react';
 import { vehicleService } from '../../services/vehicleService';
 import { useSettings } from '../../context/SettingsContext';
@@ -28,14 +25,6 @@ const CATEGORIES = [
 ];
 const TRANSMISSIONS = ['Automatic', 'Manual'];
 const FUEL_TYPES = ['Petrol', 'Diesel', 'Hybrid', 'Electric'];
-const SERVICE_OPTIONS = [
-  'Self Drive',
-  'With Driver',
-  'Airport Transfer',
-  'Wedding Hire',
-  'Long-Term Rental'
-];
-
 export const AdminVehiclesPage = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -203,7 +192,7 @@ export const AdminVehiclesPage = () => {
     try {
       await vehicleService.deleteVehicle(id);
       fetchVehicles();
-    } catch (err) {
+    } catch {
       alert('Failed to delete vehicle.');
     }
   };
@@ -212,7 +201,7 @@ export const AdminVehiclesPage = () => {
     try {
       await vehicleService.updateVehicle(vehicle._id, { status: newStatus });
       fetchVehicles();
-    } catch (err) {
+    } catch {
       alert('Failed to update status.');
     }
   };

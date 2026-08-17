@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Fuel, Gauge, Wind, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Users, Fuel, Gauge, Wind, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 import { getOptimizedImageUrl, ImagePresets } from '../../utils/imageOptimizer';

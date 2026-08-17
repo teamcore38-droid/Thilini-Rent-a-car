@@ -1,5 +1,8 @@
 import { Vehicle } from '../models/Vehicle.js';
 
+const VEHICLE_CARD_FIELDS =
+  'name slug make model year category transmission fuelType seats hasAC images dailyRate status includedMileagePerDay';
+
 const generateSlug = (make, model, year) => {
   return `${make}-${model}-${year}`
     .toLowerCase()
@@ -83,11 +86,17 @@ export const getVehicles = async (req, res, next) => {
     if (sort === 'name_asc') sortOptions = { name: 1 };
 
     const pageNum = Math.max(1, parseInt(page, 10));
-    const limitNum = Math.max(1, parseInt(limit, 10));
+    // Bound public payloads while still supporting the 50-item booking selector.
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     const [vehicles, total] = await Promise.all([
-      Vehicle.find(query).sort(sortOptions).skip(skip).limit(limitNum).lean(),
+      Vehicle.find(query)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limitNum)
+        .select(VEHICLE_CARD_FIELDS)
+        .lean(),
       Vehicle.countDocuments(query)
     ]);
 
@@ -102,6 +111,7 @@ export const getVehicles = async (req, res, next) => {
   } catch (error) {
     console.error('[Vehicle Query Error]:', error.message);
     if (error.name === 'MongooseServerSelectionError' || error.name === 'MongoNetworkError') {
+      res.set('Cache-Control', 'no-store');
       return res.status(503).json({
         success: false,
         message: 'Database connection in progress. Please retry.',
@@ -119,30 +129,15 @@ export const getVehicles = async (req, res, next) => {
 // PUBLIC: Get 6 featured vehicles for Homepage
 export const getFeaturedVehicles = async (req, res, next) => {
   try {
+    // Sorting featured vehicles first preserves the previous behavior in one query.
     const featured = await Vehicle.find({
       active: true,
-      featured: true,
       status: { $ne: 'archived' }
     })
+      .sort({ featured: -1, dailyRate: 1 })
       .limit(6)
+      .select(VEHICLE_CARD_FIELDS)
       .lean();
-
-    // If fewer than 6 marked featured, supplement with available vehicles
-    if (featured.length < 6) {
-      const existingIds = featured.map((v) => v._id);
-      const remainingCount = 6 - featured.length;
-      const additional = await Vehicle.find({
-        active: true,
-        _id: { $nin: existingIds },
-        status: { $ne: 'archived' }
-      })
-        .limit(remainingCount)
-        .lean();
-      return res.status(200).json({
-        success: true,
-        vehicles: [...featured, ...additional]
-      });
-    }
 
     res.status(200).json({
       success: true,
@@ -150,6 +145,7 @@ export const getFeaturedVehicles = async (req, res, next) => {
     });
   } catch (error) {
     console.error('[Featured Vehicles Error]:', error.message);
+    res.set('Cache-Control', 'no-store');
     res.status(200).json({
       success: true,
       vehicles: []

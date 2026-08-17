@@ -2,8 +2,6 @@ import React, { useState, useRef } from 'react';
 import {
   UploadCloud,
   X,
-  Plus,
-  Image as ImageIcon,
   CheckCircle2,
   AlertCircle,
   Loader2,

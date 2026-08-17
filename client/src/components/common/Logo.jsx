@@ -33,7 +33,10 @@ export const Logo = ({
         src={logoImg}
         alt="Thilini Rent A Car"
         className={`${sizeClasses} w-auto object-contain`}
+        width="2030"
+        height="719"
         loading="eager"
+        decoding="async"
       />
     </div>
   );

@@ -1,6 +1,11 @@
 import api from './api';
 
 export const contentService = {
+  getHomeContent: async (config = {}) => {
+    const response = await api.get('/content/home', config);
+    return response.data;
+  },
+
   // Services
   getServices: async () => {
     const response = await api.get('/content/services');

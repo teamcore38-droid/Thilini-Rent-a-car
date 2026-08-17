@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   Calendar,
   CheckCircle2,
-  Clock,
   Car,
   User,
-  Phone,
-  Mail,
   MapPin,
   Plane,
   AlertCircle,
@@ -48,8 +45,7 @@ const SERVICE_TYPES = [
 
 export const BookingPage = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { formatCurrency, getWhatsAppUrl } = useSettings();
+  const { formatCurrency } = useSettings();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [vehicles, setVehicles] = useState([]);
@@ -90,21 +86,29 @@ export const BookingPage = () => {
 
   // Fetch active vehicles on mount
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchVehicles = async () => {
       try {
-        const data = await vehicleService.getVehicles({ limit: 50 });
+        const data = await vehicleService.getVehicles(
+          { limit: 50 },
+          { signal: controller.signal }
+        );
         setVehicles(data.vehicles || []);
-        if (!selectedVehicleId && data.vehicles?.length > 0) {
-          setSelectedVehicleId(data.vehicles[0]._id);
-        }
+        setSelectedVehicleId((currentId) => currentId || data.vehicles?.[0]?._id || '');
       } catch (err) {
-        console.error('Failed to load fleet:', err);
+        if (err.code !== 'ERR_CANCELED') {
+          console.error('Failed to load fleet:', err);
+        }
       } finally {
-        setLoadingVehicles(false);
+        if (!controller.signal.aborted) {
+          setLoadingVehicles(false);
+        }
       }
     };
     fetchVehicles();
-  }, [selectedVehicleId]);
+    return () => controller.abort();
+  }, []);
 
   const selectedVehicle = vehicles.find((v) => v._id === selectedVehicleId);
 

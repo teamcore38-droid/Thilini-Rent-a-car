@@ -1,38 +1,70 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SettingsProvider } from './context/SettingsContext';
 import { ScrollToTop } from './components/common/ScrollToTop';
 import { PublicLayout } from './components/layout/PublicLayout';
 
-// Public Pages
-import { HomePage } from './pages/HomePage';
-import { FleetPage } from './pages/FleetPage';
-import { VehicleDetailsPage } from './pages/VehicleDetailsPage';
-import { ServicesPage } from './pages/ServicesPage';
-import { AboutPage } from './pages/AboutPage';
-import { BookingPage } from './pages/BookingPage';
-import { FaqPage } from './pages/FaqPage';
-import { ContactPage } from './pages/ContactPage';
-import { TermsPage } from './pages/TermsPage';
-import { PrivacyPage } from './pages/PrivacyPage';
-import { NotFoundPage } from './pages/NotFoundPage';
+const lazyNamed = (loader, exportName) =>
+  lazy(() => loader().then((module) => ({ default: module[exportName] })));
 
-// Admin Pages
-import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminLayout } from './pages/admin/AdminLayout';
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminVehiclesPage } from './pages/admin/AdminVehiclesPage';
-import { AdminBookingsPage } from './pages/admin/AdminBookingsPage';
-import { AdminContentPage } from './pages/admin/AdminContentPage';
-import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+// Route-level chunks keep pages that are not being viewed out of the initial download.
+const HomePage = lazyNamed(() => import('./pages/HomePage'), 'HomePage');
+const FleetPage = lazyNamed(() => import('./pages/FleetPage'), 'FleetPage');
+const VehicleDetailsPage = lazyNamed(
+  () => import('./pages/VehicleDetailsPage'),
+  'VehicleDetailsPage'
+);
+const ServicesPage = lazyNamed(() => import('./pages/ServicesPage'), 'ServicesPage');
+const AboutPage = lazyNamed(() => import('./pages/AboutPage'), 'AboutPage');
+const BookingPage = lazyNamed(() => import('./pages/BookingPage'), 'BookingPage');
+const FaqPage = lazyNamed(() => import('./pages/FaqPage'), 'FaqPage');
+const ContactPage = lazyNamed(() => import('./pages/ContactPage'), 'ContactPage');
+const TermsPage = lazyNamed(() => import('./pages/TermsPage'), 'TermsPage');
+const PrivacyPage = lazyNamed(() => import('./pages/PrivacyPage'), 'PrivacyPage');
+const NotFoundPage = lazyNamed(() => import('./pages/NotFoundPage'), 'NotFoundPage');
+
+const AdminAuthBoundary = lazyNamed(
+  () => import('./components/layout/AdminAuthBoundary'),
+  'AdminAuthBoundary'
+);
+const AdminLoginPage = lazyNamed(
+  () => import('./pages/admin/AdminLoginPage'),
+  'AdminLoginPage'
+);
+const AdminLayout = lazyNamed(() => import('./pages/admin/AdminLayout'), 'AdminLayout');
+const AdminDashboardPage = lazyNamed(
+  () => import('./pages/admin/AdminDashboardPage'),
+  'AdminDashboardPage'
+);
+const AdminVehiclesPage = lazyNamed(
+  () => import('./pages/admin/AdminVehiclesPage'),
+  'AdminVehiclesPage'
+);
+const AdminBookingsPage = lazyNamed(
+  () => import('./pages/admin/AdminBookingsPage'),
+  'AdminBookingsPage'
+);
+const AdminContentPage = lazyNamed(
+  () => import('./pages/admin/AdminContentPage'),
+  'AdminContentPage'
+);
+const AdminSettingsPage = lazyNamed(
+  () => import('./pages/admin/AdminSettingsPage'),
+  'AdminSettingsPage'
+);
+
+const PageLoader = () => (
+  <div className="min-h-[40vh] flex items-center justify-center" role="status" aria-label="Loading page">
+    <div className="w-9 h-9 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 function App() {
   return (
-    <AuthProvider>
-      <SettingsProvider>
-        <BrowserRouter>
-          <ScrollToTop />
+    <SettingsProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public Layout Routes */}
             <Route path="/" element={<PublicLayout />}>
@@ -49,21 +81,21 @@ function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Route>
 
-            {/* Admin Login Route */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-
-            {/* Admin Protected Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="vehicles" element={<AdminVehiclesPage />} />
-              <Route path="bookings" element={<AdminBookingsPage />} />
-              <Route path="content" element={<AdminContentPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
+            {/* Admin code and authentication only load for admin routes. */}
+            <Route element={<AdminAuthBoundary />}>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="vehicles" element={<AdminVehiclesPage />} />
+                <Route path="bookings" element={<AdminBookingsPage />} />
+                <Route path="content" element={<AdminContentPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
+              </Route>
             </Route>
           </Routes>
-        </BrowserRouter>
-      </SettingsProvider>
-    </AuthProvider>
+        </Suspense>
+      </BrowserRouter>
+    </SettingsProvider>
   );
 }
 

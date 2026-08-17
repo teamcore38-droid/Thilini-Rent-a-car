@@ -6,7 +6,6 @@ import {
   Plus,
   Edit2,
   Trash2,
-  Check,
   X,
   Star,
   Info
@@ -18,7 +17,6 @@ export const AdminContentPage = () => {
   const [faqs, setFaqs] = useState([]);
   const [services, setServices] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   // FAQ modal state
   const [faqModalOpen, setFaqModalOpen] = useState(false);
@@ -38,7 +36,6 @@ export const AdminContentPage = () => {
   });
 
   const fetchContent = async () => {
-    setLoading(true);
     try {
       const [faqsData, servicesData, testData] = await Promise.all([
         contentService.getAdminFAQs(),
@@ -50,8 +47,6 @@ export const AdminContentPage = () => {
       setTestimonials(testData?.testimonials || []);
     } catch (err) {
       console.error('Failed to load content:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -70,7 +65,7 @@ export const AdminContentPage = () => {
       }
       setFaqModalOpen(false);
       fetchContent();
-    } catch (err) {
+    } catch {
       alert('Failed to save FAQ');
     }
   };
@@ -80,7 +75,7 @@ export const AdminContentPage = () => {
     try {
       await contentService.deleteFAQ(id);
       fetchContent();
-    } catch (err) {
+    } catch {
       alert('Failed to delete FAQ');
     }
   };
@@ -96,7 +91,7 @@ export const AdminContentPage = () => {
       }
       setTestimonialModalOpen(false);
       fetchContent();
-    } catch (err) {
+    } catch {
       alert('Failed to save review');
     }
   };
@@ -106,7 +101,7 @@ export const AdminContentPage = () => {
     try {
       await contentService.deleteTestimonial(id);
       fetchContent();
-    } catch (err) {
+    } catch {
       alert('Failed to delete review');
     }
   };

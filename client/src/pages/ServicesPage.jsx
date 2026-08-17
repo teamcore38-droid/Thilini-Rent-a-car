@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Key, UserCheck, Plane, HeartHandshake, CalendarDays, Car, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Key, UserCheck, Plane, HeartHandshake, CalendarDays, Car, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { contentService } from '../services/contentService';
 import { useSettings } from '../context/SettingsContext';
 
+const SERVICE_ICONS = { Key, UserCheck, Plane, HeartHandshake, CalendarDays, Car };
+
 export const ServicesPage = () => {
   const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
   const { getWhatsAppUrl } = useSettings();
 
   useEffect(() => {
@@ -17,21 +18,10 @@ export const ServicesPage = () => {
         setServices(data?.services || []);
       } catch (err) {
         console.error('Error fetching services:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchServices();
   }, []);
-
-  const serviceIcons = {
-    Key: Key,
-    UserCheck: UserCheck,
-    Plane: Plane,
-    HeartHandshake: HeartHandshake,
-    CalendarDays: CalendarDays,
-    Car: Car
-  };
 
   return (
     <div className="min-h-screen bg-gray-50/50 py-10 sm:py-16">
@@ -52,7 +42,7 @@ export const ServicesPage = () => {
         {/* Services Showcase Cards */}
         <div className="space-y-8 mb-16">
           {services.map((srv, idx) => {
-            const IconComp = serviceIcons[srv.iconName] || Car;
+            const IconComp = SERVICE_ICONS[srv.iconName] || Car;
             const isReversed = idx % 2 !== 0;
             return (
               <div

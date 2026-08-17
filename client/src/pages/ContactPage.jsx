@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react';
 import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { useSettings } from '../context/SettingsContext';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, ShieldAlert, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 export const TermsPage = () => {

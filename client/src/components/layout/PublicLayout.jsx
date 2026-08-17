@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
-import { Footer } from './Footer';
 import { FloatingWhatsApp } from './FloatingWhatsApp';
 import { MobileBottomBar } from './MobileBottomBar';
+
+const Footer = lazy(() => import('./Footer').then((module) => ({ default: module.Footer })));
 
 export const PublicLayout = () => {
   return (
@@ -12,7 +13,9 @@ export const PublicLayout = () => {
       <div className="flex-1">
         <Outlet />
       </div>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
       <FloatingWhatsApp />
       <MobileBottomBar />
     </div>

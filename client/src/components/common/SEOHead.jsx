@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 
 export const SEOHead = ({ title, description, schemaData }) => {
   const { settings } = useSettings();
-  const location = useLocation();
 
   const siteTitle = settings.businessName || 'Thilini Rent A Car';
   const pageTitle = title ? `${title} | ${siteTitle}` : `${siteTitle} - Sri Lanka Car Rental & Airport Transfers`;

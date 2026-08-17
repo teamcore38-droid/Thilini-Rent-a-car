@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { settingService } from '../services/settingService';
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 
 const defaultSettings = {
   businessName: 'Thilini Rent A Car',
@@ -31,7 +32,11 @@ export const SettingsProvider = ({ children }) => {
 
   const fetchSettings = async () => {
     try {
-      const data = await settingService.getSettings();
+      const response = await fetch(`${API_BASE_URL}/settings`, {
+        headers: { Accept: 'application/json' }
+      });
+      if (!response.ok) throw new Error(`Settings request failed with ${response.status}`);
+      const data = await response.json();
       if (data?.settings) {
         setSettings(data.settings);
       }
@@ -47,6 +52,8 @@ export const SettingsProvider = ({ children }) => {
   }, []);
 
   const updateSettings = async (newData) => {
+    // Keep the heavier authenticated API client out of public-page startup.
+    const { settingService } = await import('../services/settingService');
     const data = await settingService.updateSettings(newData);
     if (data?.settings) {
       setSettings(data.settings);

@@ -13,6 +13,7 @@ export const getPublicSettings = async (req, res, next) => {
 
     if (!settings) {
       settings = DEFAULT_BUSINESS_SETTINGS;
+      res.set('Cache-Control', 'no-store');
     }
 
     res.status(200).json({
@@ -21,6 +22,7 @@ export const getPublicSettings = async (req, res, next) => {
     });
   } catch (error) {
     // Fail-safe: Always return 200 with default business settings to prevent frontend crash
+    res.set('Cache-Control', 'no-store');
     res.status(200).json({
       success: true,
       settings: DEFAULT_BUSINESS_SETTINGS

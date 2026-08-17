@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, CheckCircle2, AlertCircle, Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Phone, Mail, MapPin, Clock } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 
@@ -25,7 +25,7 @@ export const AdminSettingsPage = () => {
       setSuccessMsg('Business settings updated successfully and applied sitewide!');
       await refreshSettings();
       setTimeout(() => setSuccessMsg(''), 4000);
-    } catch (err) {
+    } catch {
       setErrorMsg('Failed to update business settings.');
     } finally {
       setSaving(false);

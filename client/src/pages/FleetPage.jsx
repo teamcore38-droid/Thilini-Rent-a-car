@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Search,
@@ -6,14 +6,12 @@ import {
   X,
   SlidersHorizontal,
   RotateCcw,
-  Car,
-  ChevronDown,
-  ArrowUpDown
+  Car
 } from 'lucide-react';
 import { VehicleCard } from '../components/common/VehicleCard';
 import { VehicleCardSkeleton } from '../components/common/VehicleCardSkeleton';
 import { vehicleService } from '../services/vehicleService';
-import { useSettings } from '../context/SettingsContext';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
 
 const CATEGORIES = [
   'Economy',
@@ -38,8 +36,6 @@ const SERVICE_TYPES = [
 
 export const FleetPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { formatCurrency } = useSettings();
-  const [isPending, startTransition] = useTransition();
 
   // Filters State derived from URL search parameters
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -60,49 +56,65 @@ export const FleetPage = () => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const debouncedSearch = useDebouncedValue(search, 300);
+  const debouncedMinPrice = useDebouncedValue(minPrice, 300);
+  const debouncedMaxPrice = useDebouncedValue(maxPrice, 300);
 
   // Sync state to URL and fetch vehicles
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+
     const fetchFleet = async () => {
       setLoading(true);
       setError(null);
 
       const params = {};
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (selectedCategory) params.category = selectedCategory;
       if (selectedTransmission) params.transmission = selectedTransmission;
       if (selectedFuel) params.fuelType = selectedFuel;
       if (selectedService) params.serviceType = selectedService;
       if (selectedSeats) params.seats = selectedSeats;
-      if (minPrice) params.minPrice = minPrice;
-      if (maxPrice) params.maxPrice = maxPrice;
+      if (debouncedMinPrice) params.minPrice = debouncedMinPrice;
+      if (debouncedMaxPrice) params.maxPrice = debouncedMaxPrice;
       if (sort) params.sort = sort;
       params.page = page;
       params.limit = 9;
 
       try {
-        const data = await vehicleService.getVehicles(params);
-        setVehicles(data.vehicles || []);
-        setTotal(data.total || 0);
-        setTotalPages(data.totalPages || 1);
+        const data = await vehicleService.getVehicles(params, { signal: controller.signal });
+        if (active) {
+          setVehicles(data.vehicles || []);
+          setTotal(data.total || 0);
+          setTotalPages(data.totalPages || 1);
+        }
       } catch (err) {
-        console.error('Error fetching fleet:', err);
-        setError('Failed to load fleet. Please check your connection.');
+        if (active && err.code !== 'ERR_CANCELED') {
+          console.error('Error fetching fleet:', err);
+          setError('Failed to load fleet. Please check your connection.');
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchFleet();
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [
-    search,
+    debouncedSearch,
     selectedCategory,
     selectedTransmission,
     selectedFuel,
     selectedService,
     selectedSeats,
-    minPrice,
-    maxPrice,
+    debouncedMinPrice,
+    debouncedMaxPrice,
     sort,
     page
   ]);

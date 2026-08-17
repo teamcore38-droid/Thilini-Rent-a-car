@@ -1,27 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Calendar,
   Search,
-  Filter,
   Download,
-  Phone,
-  Mail,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Car,
-  FileText,
   AlertCircle,
-  User,
-  MapPin,
-  Plane,
-  X,
-  Check
+  X
 } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { bookingService } from '../../services/bookingService';
 import { vehicleService } from '../../services/vehicleService';
-import { useSettings } from '../../context/SettingsContext';
+import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 
 const STATUS_OPTIONS = ['all', 'Pending', 'Contacted', 'Confirmed', 'Completed', 'Cancelled'];
 
@@ -29,42 +17,45 @@ export const AdminBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateError, setUpdateError] = useState('');
   const [updating, setUpdating] = useState(false);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
   // Edit fields in modal
   const [status, setStatus] = useState('Pending');
   const [adminNotes, setAdminNotes] = useState('');
   const [assignedVehicleId, setAssignedVehicleId] = useState('');
 
-  const { formatCurrency } = useSettings();
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async (signal) => {
     setLoading(true);
     try {
       const params = {};
       if (statusFilter !== 'all') params.status = statusFilter;
-      if (searchQuery) params.search = searchQuery;
+      if (debouncedSearchQuery) params.search = debouncedSearchQuery;
       params.limit = 50;
 
-      const data = await bookingService.getAdminBookings(params);
+      const data = await bookingService.getAdminBookings(params, { signal });
       setBookings(data?.bookings || []);
-      setTotal(data?.total || 0);
     } catch (err) {
-      console.error('Failed to load bookings:', err);
+      if (err.code !== 'ERR_CANCELED') {
+        console.error('Failed to load bookings:', err);
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
     }
-  };
+  }, [statusFilter, debouncedSearchQuery]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [statusFilter, searchQuery]);
+    const controller = new AbortController();
+    fetchBookings(controller.signal);
+    return () => controller.abort();
+  }, [fetchBookings]);
 
   useEffect(() => {
     const fetchVehiclesList = async () => {
@@ -119,7 +110,7 @@ export const AdminBookingsPage = () => {
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-    } catch (err) {
+    } catch {
       alert('Failed to export CSV.');
     }
   };

@@ -2,8 +2,8 @@ import api from './api';
 
 export const vehicleService = {
   // Public
-  getVehicles: async (params = {}) => {
-    const response = await api.get('/vehicles', { params });
+  getVehicles: async (params = {}, config = {}) => {
+    const response = await api.get('/vehicles', { ...config, params });
     return response.data;
   },
 

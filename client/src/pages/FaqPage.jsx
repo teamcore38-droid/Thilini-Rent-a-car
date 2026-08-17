@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, ChevronDown, Phone, HelpCircle } from 'lucide-react';
 import { WhatsAppIcon } from '../components/common/WhatsAppIcon';
 import { contentService } from '../services/contentService';
@@ -6,7 +6,6 @@ import { useSettings } from '../context/SettingsContext';
 
 export const FaqPage = () => {
   const [faqs, setFaqs] = useState([]);
-  const [filteredFaqs, setFilteredFaqs] = useState([]);
   const [categories, setCategories] = useState(['All']);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +20,6 @@ export const FaqPage = () => {
         const data = await contentService.getFAQs();
         const list = data?.faqs || [];
         setFaqs(list);
-        setFilteredFaqs(list);
 
         const cats = ['All', ...new Set(list.map((f) => f.category).filter(Boolean))];
         setCategories(cats);
@@ -34,7 +32,7 @@ export const FaqPage = () => {
     fetchFAQs();
   }, []);
 
-  useEffect(() => {
+  const filteredFaqs = useMemo(() => {
     let result = faqs;
     if (selectedCategory !== 'All') {
       result = result.filter((f) => f.category === selectedCategory);
@@ -45,7 +43,7 @@ export const FaqPage = () => {
         (f) => f.question.toLowerCase().includes(q) || f.answer.toLowerCase().includes(q)
       );
     }
-    setFilteredFaqs(result);
+    return result;
   }, [selectedCategory, searchQuery, faqs]);
 
   return (

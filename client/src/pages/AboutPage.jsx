@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Heart, Users, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
-import { TrustStrip } from '../components/common/TrustStrip';
+import { ShieldCheck, Heart, MapPin, CheckCircle, ArrowRight } from 'lucide-react';
 
 export const AboutPage = () => {
   return (

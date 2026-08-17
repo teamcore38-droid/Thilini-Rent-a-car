@@ -6,13 +6,10 @@ import {
   Clock,
   Wrench,
   Calendar,
-  ArrowRight,
-  Phone,
-  AlertCircle
+  ArrowRight
 } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/common/WhatsAppIcon';
 import { bookingService } from '../../services/bookingService';
-import { useSettings } from '../../context/SettingsContext';
 
 export const AdminDashboardPage = () => {
   const [stats, setStats] = useState({
@@ -24,8 +21,6 @@ export const AdminDashboardPage = () => {
   });
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { formatCurrency, getWhatsAppUrl } = useSettings();
-
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {

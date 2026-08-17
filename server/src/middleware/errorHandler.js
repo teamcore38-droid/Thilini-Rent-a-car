@@ -1,6 +1,9 @@
 export const errorHandler = (err, req, res, next) => {
   console.error('[API Error]:', err);
 
+  // Never allow a transient failure response to enter the browser or edge cache.
+  res.set('Cache-Control', 'no-store');
+
   let statusCode = err.statusCode || res.statusCode;
   if (statusCode === 200) statusCode = 500;
 

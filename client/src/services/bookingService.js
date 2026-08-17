@@ -23,8 +23,8 @@ export const bookingService = {
     return response.data;
   },
 
-  getAdminBookings: async (params = {}) => {
-    const response = await api.get('/bookings/admin/all', { params });
+  getAdminBookings: async (params = {}, config = {}) => {
+    const response = await api.get('/bookings/admin/all', { ...config, params });
     return response.data;
   },
 
