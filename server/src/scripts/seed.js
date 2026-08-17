@@ -12,9 +12,11 @@ import { DEFAULT_BUSINESS_SETTINGS } from '../config/constants.js';
 
 dotenv.config();
 
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch (e) {}
+if (!process.env.VERCEL) {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+  } catch (e) {}
+}
 
 const sampleVehicles = [
   {
