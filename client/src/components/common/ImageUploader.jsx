@@ -8,7 +8,8 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
-  Link as LinkIcon
+  Link as LinkIcon,
+  FolderOpen
 } from 'lucide-react';
 import { uploadService } from '../../services/uploadService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimizer';
@@ -20,18 +21,19 @@ export const ImageUploader = ({
   maxImages = 8
 }) => {
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [manualUrl, setManualUrl] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = async (e) => {
-    const files = e.target.files;
+  const processFiles = async (fileList) => {
+    const files = Array.from(fileList);
     if (!files || files.length === 0) return;
 
     if (images.length + files.length > maxImages) {
-      setError(`You can upload a maximum of ${maxImages} images per vehicle.`);
+      setError(`You can upload a maximum of ${maxImages} photos per vehicle.`);
       return;
     }
 
@@ -45,7 +47,7 @@ export const ImageUploader = ({
         if (res?.image?.url) {
           const updated = [...images, res.image.url];
           onChange(updated);
-          setSuccess('Image uploaded and optimized on Cloudinary!');
+          setSuccess('Photo uploaded and auto-optimized on Cloudinary CDN!');
         }
       } else {
         const res = await uploadService.uploadMultipleImages(files, folder);
@@ -53,20 +55,42 @@ export const ImageUploader = ({
           const newUrls = res.images.map((img) => img.url);
           const updated = [...images, ...newUrls];
           onChange(updated);
-          setSuccess(`${res.images.length} images uploaded & optimized on Cloudinary!`);
+          setSuccess(`${res.images.length} photos uploaded & optimized on Cloudinary CDN!`);
         }
       }
     } catch (err) {
       console.error('Upload failed:', err);
       setError(
         err.response?.data?.message ||
-          'Failed to upload to Cloudinary. Check your Cloudinary API keys in .env.'
+          'Failed to upload to Cloudinary. Please verify your internet connection.'
       );
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
       setTimeout(() => setSuccess(''), 4000);
     }
+  };
+
+  const handleFileSelect = (e) => {
+    processFiles(e.target.files);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setDragOver(false);
   };
 
   const handleRemoveImage = (indexToRemove) => {
@@ -99,7 +123,7 @@ export const ImageUploader = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <label className="block font-bold text-xs text-charcoal-900 uppercase tracking-wider">
-          Vehicle Gallery Photos ({images.length}/{maxImages})
+          Vehicle Photos ({images.length}/{maxImages})
         </label>
         <button
           type="button"
@@ -107,8 +131,52 @@ export const ImageUploader = ({
           className="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-1"
         >
           <LinkIcon className="w-3.5 h-3.5" />
-          <span>{showUrlInput ? 'Hide URL input' : 'Add image via URL'}</span>
+          <span>{showUrlInput ? 'Hide URL input' : 'Paste Image URL instead'}</span>
         </button>
+      </div>
+
+      {/* Prominent Upload from Device Dropzone */}
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`relative border-2 border-dashed rounded-2xl p-6 transition-all text-center flex flex-col items-center justify-center gap-2.5 ${
+          dragOver
+            ? 'border-brand-600 bg-brand-50/50'
+            : 'border-gray-300 hover:border-brand-500 bg-gray-50/70'
+        }`}
+      >
+        <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center shadow-sm">
+          {uploading ? (
+            <Loader2 className="w-6 h-6 animate-spin" />
+          ) : (
+            <UploadCloud className="w-6 h-6" />
+          )}
+        </div>
+
+        <div>
+          <h4 className="font-extrabold text-sm text-charcoal-900">
+            {uploading ? 'Uploading to Cloudinary CDN...' : 'Upload Photos from Device'}
+          </h4>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Drag and drop images here, or choose from your computer / phone
+          </p>
+          <span className="inline-block mt-1 text-[10px] text-gray-400">
+            Supports JPG, PNG, WebP (Auto WebP / AVIF compressed) • Max 10MB per photo
+          </span>
+        </div>
+
+        <div className="pt-1 flex items-center gap-2">
+          <button
+            type="button"
+            disabled={uploading || images.length >= maxImages}
+            onClick={() => fileInputRef.current?.click()}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white rounded-xl text-xs font-bold shadow-md transition-all disabled:opacity-50 min-h-[40px]"
+          >
+            <FolderOpen className="w-4 h-4" />
+            <span>Select Photos from Device</span>
+          </button>
+        </div>
       </div>
 
       {/* Manual URL input fallback */}
@@ -126,7 +194,7 @@ export const ImageUploader = ({
             onClick={handleAddManualUrl}
             className="px-4 py-2 bg-charcoal-900 text-white rounded-xl text-xs font-bold hover:bg-charcoal-800"
           >
-            Add
+            Add URL
           </button>
         </div>
       )}
@@ -146,97 +214,79 @@ export const ImageUploader = ({
         </div>
       )}
 
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {images.map((imgUrl, idx) => {
-          const isCloudinary = imgUrl.includes('res.cloudinary.com');
-          return (
-            <div
-              key={idx}
-              className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm"
-            >
-              <img
-                src={getOptimizedImageUrl(imgUrl, { width: 300, height: 225, crop: 'fill' })}
-                alt={`Vehicle ${idx + 1}`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-
-              {/* Primary badge */}
-              {idx === 0 && (
-                <span className="absolute top-2 left-2 bg-brand-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow">
-                  Cover
-                </span>
-              )}
-
-              {/* Cloudinary CDN badge */}
-              {isCloudinary && (
-                <span
-                  title="Delivered via Cloudinary Global CDN (Auto WebP / AVIF)"
-                  className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"
+      {/* Gallery Grid of Uploaded Photos */}
+      {images.length > 0 && (
+        <div className="space-y-2">
+          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block">
+            Uploaded Photos ({images.length})
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {images.map((imgUrl, idx) => {
+              const isCloudinary = imgUrl.includes('res.cloudinary.com');
+              return (
+                <div
+                  key={idx}
+                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 border border-gray-200 shadow-sm"
                 >
-                  <Sparkles className="w-2.5 h-2.5" />
-                  <span>CDN</span>
-                </span>
-              )}
+                  <img
+                    src={getOptimizedImageUrl(imgUrl, { width: 300, height: 225, crop: 'fill' })}
+                    alt={`Vehicle ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
 
-              {/* Overlay actions */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                {idx !== 0 && (
-                  <button
-                    type="button"
-                    onClick={() => handleSetPrimary(idx)}
-                    title="Set as Cover Photo"
-                    className="p-1.5 bg-white text-charcoal-900 rounded-lg hover:bg-gray-100 text-[10px] font-bold shadow"
-                  >
-                    Set Cover
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(idx)}
-                  title="Remove image"
-                  className="p-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
+                  {/* Primary Cover Badge */}
+                  {idx === 0 && (
+                    <span className="absolute top-2 left-2 bg-brand-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow">
+                      Cover Photo
+                    </span>
+                  )}
 
-        {/* Upload Button Tile */}
-        {images.length < maxImages && (
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => fileInputRef.current?.click()}
-            className="aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-300 hover:border-brand-500 hover:bg-brand-50/30 transition-all flex flex-col items-center justify-center p-3 text-center group disabled:opacity-50"
-          >
-            {uploading ? (
-              <div className="flex flex-col items-center gap-1.5 text-brand-600">
-                <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-[11px] font-bold">Uploading & Optimizing...</span>
-              </div>
-            ) : (
-              <>
-                <div className="w-10 h-10 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform">
-                  <UploadCloud className="w-5 h-5" />
+                  {/* Cloudinary CDN badge */}
+                  {isCloudinary && (
+                    <span
+                      title="Hosted on Cloudinary Global CDN"
+                      className="absolute bottom-2 left-2 bg-black/75 backdrop-blur-sm text-emerald-400 text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 shadow"
+                    >
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>Cloudinary CDN</span>
+                    </span>
+                  )}
+
+                  {/* Overlay actions */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-2">
+                    {idx !== 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleSetPrimary(idx)}
+                        title="Set as Main Cover Photo"
+                        className="px-2.5 py-1.5 bg-white text-charcoal-900 rounded-lg hover:bg-gray-100 text-[10px] font-bold shadow"
+                      >
+                        Set Cover
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      title="Remove image"
+                      className="p-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <span className="text-xs font-bold text-charcoal-800">Upload Photos</span>
-                <span className="text-[10px] text-gray-400">Auto WebP / AVIF</span>
-              </>
-            )}
-          </button>
-        )}
-      </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-      {/* Hidden file input */}
+      {/* Hidden file input for file picker */}
       <input
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/jpeg,image/png,image/webp,image/avif"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
         onChange={handleFileSelect}
         className="hidden"
       />
