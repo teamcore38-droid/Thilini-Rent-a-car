@@ -1,21 +1,30 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Fuel, Gauge, Wind, ArrowRight } from 'lucide-react';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { useSettings } from '../../context/SettingsContext';
 import { getOptimizedImageUrl, ImagePresets } from '../../utils/imageOptimizer';
+import {
+  getAdjacentImageIndex,
+  getSwipeDirection,
+  normalizeVehicleImages
+} from '../../utils/cardGallery';
 
 export const VehicleCard = ({ vehicle }) => {
   const { formatCurrency, getWhatsAppUrl } = useSettings();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const touchStartX = useRef(null);
+  const touchCurrentX = useRef(null);
+  const blockNextClick = useRef(false);
 
   if (!vehicle) return null;
 
-  const rawImage =
-    vehicle.images?.find((img) => img.isPrimary)?.url ||
-    vehicle.images?.[0]?.url ||
-    (typeof vehicle.images?.[0] === 'string' ? vehicle.images[0] : null);
-
-  const primaryImage = getOptimizedImageUrl(rawImage, ImagePresets.fleetCard);
+  const galleryImages = normalizeVehicleImages(vehicle.images);
+  const imageCount = galleryImages.length;
+  const safeImageIndex = imageCount > 0 ? currentImageIndex % imageCount : 0;
+  const currentImage = galleryImages[safeImageIndex];
+  const optimizedImage = getOptimizedImageUrl(currentImage?.url, ImagePresets.fleetCard);
+  const hasMultipleImages = imageCount > 1;
 
   const isAvailable = vehicle.status === 'available';
 
@@ -23,27 +32,101 @@ export const VehicleCard = ({ vehicle }) => {
     `Hello Thilini Rent A Car! I am interested in renting the *${vehicle.name}* (${vehicle.year || ''}) - Daily Rate: ${formatCurrency(vehicle.dailyRate)}. Is it available?`
   );
 
+  const showAdjacentImage = (direction) => {
+    if (!hasMultipleImages) return;
+    setCurrentImageIndex((index) => getAdjacentImageIndex(index, imageCount, direction));
+  };
+
+  const handleTouchStart = (event) => {
+    const clientX = event.touches[0]?.clientX;
+    touchStartX.current = clientX ?? null;
+    touchCurrentX.current = clientX ?? null;
+    blockNextClick.current = false;
+  };
+
+  const handleTouchMove = (event) => {
+    touchCurrentX.current = event.touches[0]?.clientX ?? touchCurrentX.current;
+  };
+
+  const handleTouchEnd = (event) => {
+    const endX = event.changedTouches[0]?.clientX ?? touchCurrentX.current;
+    const direction = getSwipeDirection(touchStartX.current, endX);
+
+    if (hasMultipleImages && direction !== 0) {
+      blockNextClick.current = true;
+      showAdjacentImage(direction);
+    }
+
+    touchStartX.current = null;
+    touchCurrentX.current = null;
+  };
+
+  const handleImageClick = (event) => {
+    if (blockNextClick.current) {
+      event.preventDefault();
+      blockNextClick.current = false;
+    }
+  };
+
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-gray-200/90 shadow-subtle hover:shadow-card transition-all duration-300 flex flex-col h-full">
       {/* Image Container with Badges */}
-      <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
-        <img
-          src={primaryImage}
-          alt={vehicle.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
+      <div
+        className="relative aspect-[16/10] overflow-hidden bg-gray-100 touch-pan-y"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={() => {
+          touchStartX.current = null;
+          touchCurrentX.current = null;
+        }}
+      >
+        <Link
+          to={`/fleet/${vehicle.slug}`}
+          onClick={handleImageClick}
+          className="block w-full h-full cursor-pointer"
+          aria-label={`View details for ${vehicle.name}`}
+        >
+          <img
+            src={optimizedImage}
+            alt={currentImage?.alt || vehicle.name}
+            className="w-full h-full object-cover select-none group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 pointer-events-none" />
+        </Link>
+
+        {hasMultipleImages && (
+          <>
+            <button
+              type="button"
+              onClick={() => showAdjacentImage(-1)}
+              className="hidden md:flex absolute z-20 left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center rounded-full bg-black/35 hover:bg-black/60 border border-white/35 text-white shadow-sm backdrop-blur-sm transition-colors"
+              aria-label={`Previous image of ${vehicle.name}`}
+            >
+              <span aria-hidden="true" className="text-2xl leading-none -mt-0.5">‹</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => showAdjacentImage(1)}
+              className="hidden md:flex absolute z-20 right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center rounded-full bg-black/35 hover:bg-black/60 border border-white/35 text-white shadow-sm backdrop-blur-sm transition-colors"
+              aria-label={`Next image of ${vehicle.name}`}
+            >
+              <span aria-hidden="true" className="text-2xl leading-none -mt-0.5">›</span>
+            </button>
+          </>
+        )}
 
         {/* Category Badge */}
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-white/95 text-charcoal-800 shadow-sm backdrop-blur-sm">
+        <span className="absolute z-10 top-3 left-3 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-white/95 text-charcoal-800 shadow-sm backdrop-blur-sm pointer-events-none">
           {vehicle.category}
         </span>
 
         {/* Status Badge */}
         <span
-          className={`absolute top-3 right-3 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm backdrop-blur-sm flex items-center gap-1 ${
+          className={`absolute z-10 top-3 right-3 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm backdrop-blur-sm flex items-center gap-1 pointer-events-none ${
             isAvailable
               ? 'bg-emerald-500/90 text-white'
               : vehicle.status === 'booked'
