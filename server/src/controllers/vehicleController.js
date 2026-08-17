@@ -100,6 +100,18 @@ export const getVehicles = async (req, res, next) => {
       vehicles
     });
   } catch (error) {
+    console.error('[Vehicle Query Error]:', error.message);
+    if (error.name === 'MongooseServerSelectionError' || error.name === 'MongoNetworkError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection in progress. Please retry.',
+        count: 0,
+        total: 0,
+        totalPages: 1,
+        currentPage: 1,
+        vehicles: []
+      });
+    }
     next(error);
   }
 };
@@ -137,7 +149,11 @@ export const getFeaturedVehicles = async (req, res, next) => {
       vehicles: featured
     });
   } catch (error) {
-    next(error);
+    console.error('[Featured Vehicles Error]:', error.message);
+    res.status(200).json({
+      success: true,
+      vehicles: []
+    });
   }
 };
 

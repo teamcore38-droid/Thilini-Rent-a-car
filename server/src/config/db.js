@@ -2,11 +2,13 @@ import mongoose from 'mongoose';
 import dns from 'node:dns';
 import { seedDatabase } from '../scripts/seed.js';
 
-// Configure reliable public DNS servers for resolving MongoDB Atlas SRV records
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch (e) {
-  // Ignore if custom DNS is not supported in the runtime environment
+// Configure public DNS servers only for local development (never in Vercel/Lambda cloud)
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+  } catch (e) {
+    // Ignore if custom DNS is not supported in the runtime environment
+  }
 }
 
 let mongod = null;
@@ -32,7 +34,7 @@ export const connectDB = async () => {
       
       await mongoose.connect(uri, {
         dbName: 'thilini_rent_a_car',
-        serverSelectionTimeoutMS: isAtlas ? 15000 : 4000
+        serverSelectionTimeoutMS: isAtlas ? 10000 : 4000
       });
       console.log(`[MongoDB Connected]: ${mongoose.connection.host}/${mongoose.connection.name}`);
       return mongoose.connection;
@@ -40,7 +42,7 @@ export const connectDB = async () => {
       cachedPromise = null; // Reset so next request can retry
       console.warn(`[MongoDB Warning]: Primary connection failed (${error.message}).`);
 
-      // In development mode (not serverless / production), spin up embedded MongoMemoryServer fallback
+      // In local development mode (not on Vercel), spin up embedded MongoMemoryServer fallback
       if (process.env.NODE_ENV !== 'production' && !isAtlas && !process.env.VERCEL) {
         try {
           console.log('[MongoDB Embedded]: Starting embedded MongoDB instance for local execution...');
@@ -55,8 +57,6 @@ export const connectDB = async () => {
         } catch (memError) {
           console.error('[MongoDB Embedded Error]:', memError.message);
         }
-      } else if (isAtlas) {
-        console.error('[MongoDB Atlas Error]: Please ensure Atlas Network Access allows 0.0.0.0/0 (all IPs) for Vercel functions.');
       }
       throw error;
     }

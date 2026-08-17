@@ -1,13 +1,4 @@
 import 'dotenv/config';
-import dns from 'node:dns';
-
-// Ensure public DNS servers are set for MongoDB Atlas SRV resolution
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch (e) {
-  // Ignore if custom DNS is not supported
-}
-
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -28,12 +19,12 @@ import uploadRoutes from './routes/uploadRoutes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Resilient DB connection middleware for serverless invocations
+// Resilient DB connection middleware
 app.use(async (req, res, next) => {
   try {
     await connectDB();
   } catch (err) {
-    console.warn(`[Database Middleware Notice]: Request ${req.method} ${req.path} proceeding, DB state: ${mongoose.connection.readyState}`);
+    console.warn(`[Database Middleware Notice]: Proceeding for ${req.method} ${req.path}, DB readyState: ${mongoose.connection.readyState}`);
   }
   next();
 });
@@ -63,13 +54,13 @@ if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Global API rate limiting (skip during tests)
-if (process.env.NODE_ENV !== 'test') {
+// Global API rate limiting (skip during tests and in serverless)
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.use('/api', apiLimiter);
 }
 
-// API Health Check
-app.get('/api/health', (req, res) => {
+// Health Check Endpoint (supports both /api/health and /health)
+const healthHandler = (req, res) => {
   res.status(200).json({
     status: 'online',
     timestamp: new Date().toISOString(),
@@ -82,9 +73,11 @@ app.get('/api/health', (req, res) => {
       name: mongoose.connection.name || 'unknown'
     }
   });
-});
+};
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
 
-// API Routes
+// Mount routes with '/api' prefix (Standard)
 app.use('/api/admin/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -92,26 +85,40 @@ app.use('/api/content', contentRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/upload', uploadRoutes);
 
-// Compatibility direct routes
+// Mount routes directly (Vercel Serverless Function compatibility)
+app.use('/admin/auth', authRoutes);
+app.use('/vehicles', vehicleRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/content', contentRoutes);
+app.use('/settings', settingRoutes);
+app.use('/upload', uploadRoutes);
+
+// Compatibility direct content shortcuts
 app.use('/api/services', (req, res, next) => {
   req.url = '/services' + (req.url === '/' ? '' : req.url);
   contentRoutes(req, res, next);
 });
+app.use('/services', (req, res, next) => {
+  req.url = '/services' + (req.url === '/' ? '' : req.url);
+  contentRoutes(req, res, next);
+});
+
 app.use('/api/faqs', (req, res, next) => {
   req.url = '/faqs' + (req.url === '/' ? '' : req.url);
   contentRoutes(req, res, next);
 });
+app.use('/faqs', (req, res, next) => {
+  req.url = '/faqs' + (req.url === '/' ? '' : req.url);
+  contentRoutes(req, res, next);
+});
+
 app.use('/api/testimonials', (req, res, next) => {
   req.url = '/testimonials' + (req.url === '/' ? '' : req.url);
   contentRoutes(req, res, next);
 });
-
-// 404 Route handler for unknown API endpoints
-app.use('/api/*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `API route ${req.originalUrl} not found.`
-  });
+app.use('/testimonials', (req, res, next) => {
+  req.url = '/testimonials' + (req.url === '/' ? '' : req.url);
+  contentRoutes(req, res, next);
 });
 
 // Centralized error handling middleware
