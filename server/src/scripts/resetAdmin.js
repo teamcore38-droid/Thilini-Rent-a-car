@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../config/mongoose.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import dns from 'node:dns';

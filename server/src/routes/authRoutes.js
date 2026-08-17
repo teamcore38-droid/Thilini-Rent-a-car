@@ -8,8 +8,10 @@ import {
 import { protect } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 import { loginValidationRules, validateRequest } from '../middleware/validators.js';
+import { noStore } from '../middleware/cache.js';
 
 const router = express.Router();
+router.use(noStore);
 
 router.post('/login', authLimiter, loginValidationRules, validateRequest, loginAdmin);
 router.get('/me', protect, getAdminProfile);

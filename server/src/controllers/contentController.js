@@ -1,21 +1,19 @@
 import { Service } from '../models/Service.js';
 import { FAQ } from '../models/FAQ.js';
 import { Testimonial } from '../models/Testimonial.js';
-import { Vehicle } from '../models/Vehicle.js';
-
-const VEHICLE_CARD_FIELDS =
-  'name slug make model year category transmission fuelType seats hasAC images dailyRate status includedMileagePerDay';
+import { getCardVehicles } from './vehicleController.js';
 
 // --- HOMEPAGE ---
 // One request replaces four separate serverless/API round trips on the homepage.
 export const getHomeContent = async (req, res, next) => {
   try {
     const [vehicles, services, faqs, testimonials] = await Promise.all([
-      Vehicle.find({ active: true, status: { $ne: 'archived' } })
-        .sort({ featured: -1, dailyRate: 1 })
-        .limit(6)
-        .select(VEHICLE_CARD_FIELDS)
-        .lean(),
+      getCardVehicles(
+        { active: true, status: { $ne: 'archived' } },
+        { featured: -1, dailyRate: 1, _id: 1 },
+        0,
+        6
+      ),
       Service.find({ active: true }).sort({ order: 1 }).lean(),
       FAQ.find({ active: true }).sort({ order: 1 }).lean(),
       Testimonial.find({ active: true }).sort({ order: 1 }).lean()

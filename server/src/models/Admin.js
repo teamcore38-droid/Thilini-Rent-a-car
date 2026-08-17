@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../config/mongoose.js';
 import bcrypt from 'bcryptjs';
 
 const adminSchema = new mongoose.Schema(

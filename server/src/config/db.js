@@ -1,71 +1,104 @@
-import mongoose from 'mongoose';
+import mongoose from './mongoose.js';
 
-let mongod = null;
-let cachedPromise = null;
-
-export const connectDB = async () => {
-  // 1. If already connected, return immediately
-  if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
-  }
-
-  // 2. If connection is in progress, reuse the existing promise
-  if (cachedPromise) {
-    return cachedPromise;
-  }
-
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    console.error('[MongoDB Error]: MONGODB_URI is not defined in environment variables.');
-    throw new Error('MONGODB_URI environment variable is missing.');
-  }
-
-  const isAtlas = uri.includes('mongodb+srv://');
-
-  cachedPromise = (async () => {
-    try {
-      console.log(`[MongoDB]: Connecting to ${isAtlas ? 'MongoDB Atlas' : 'MongoDB'}...`);
-
-      const connection = await mongoose.connect(uri, {
-        dbName: 'thilini_rent_a_car',
-        serverSelectionTimeoutMS: 8000,
-        connectTimeoutMS: 10000
-      });
-
-      console.log(`[MongoDB Connected]: ${mongoose.connection.host}/${mongoose.connection.name}`);
-      return connection;
-    } catch (error) {
-      cachedPromise = null; // Reset so next request can retry
-      console.error(`[MongoDB Connection Error]:`, error.message);
-
-      // Local development in-memory fallback (only if NOT on Vercel and NOT connecting to Atlas)
-      if (process.env.NODE_ENV !== 'production' && !isAtlas && !process.env.VERCEL) {
-        try {
-          console.log('[MongoDB Embedded]: Starting embedded MongoDB instance...');
-          const { MongoMemoryServer } = await import('mongodb-memory-server');
-          mongod = await MongoMemoryServer.create();
-          const memUri = mongod.getUri();
-          const memConn = await mongoose.connect(memUri, { dbName: 'thilini_rent_a_car' });
-          console.log(`[MongoDB Connected - In-Memory]: ${memUri}`);
-
-          const { seedDatabase } = await import('../scripts/seed.js');
-          await seedDatabase();
-          return memConn;
-        } catch (memError) {
-          console.error('[MongoDB Embedded Error]:', memError.message);
-        }
-      }
-      throw error;
-    }
-  })();
-
-  return cachedPromise;
+const CONNECTION_STATES = {
+  0: 'disconnected',
+  1: 'connected',
+  2: 'connecting',
+  3: 'disconnecting'
 };
 
-export const closeDB = async () => {
-  cachedPromise = null;
-  await mongoose.disconnect();
-  if (mongod) {
-    await mongod.stop();
+const connectionOptions = {
+  dbName: 'thilini_rent_a_car',
+  serverSelectionTimeoutMS: 2500,
+  connectTimeoutMS: 4000
+};
+
+const safeConnectionLog = (level, event) => {
+  if (process.env.NODE_ENV === 'test') return;
+  const writer = level === 'error' ? console.error : level === 'warn' ? console.warn : console.info;
+  writer(JSON.stringify({
+    type: 'database_connection',
+    event,
+    timestamp: new Date().toISOString()
+  }));
+};
+
+export const getDatabaseState = (connection = mongoose.connection) =>
+  CONNECTION_STATES[connection.readyState] || 'unknown';
+
+export const createConnectionManager = ({
+  mongooseClient = mongoose,
+  getUri = () => process.env.MONGODB_URI,
+  options = connectionOptions,
+  installListeners = true
+} = {}) => {
+  let pendingConnection = null;
+  const connection = mongooseClient.connection;
+
+  if (installListeners && !connection.__trcListenersInstalled) {
+    Object.defineProperty(connection, '__trcListenersInstalled', {
+      value: true,
+      configurable: false,
+      enumerable: false,
+      writable: false
+    });
+
+    connection.on('connected', () => safeConnectionLog('info', 'connected'));
+    connection.on('reconnected', () => safeConnectionLog('info', 'reconnected'));
+    connection.on('disconnected', () => {
+      safeConnectionLog('warn', 'disconnected');
+    });
+    connection.on('error', () => safeConnectionLog('error', 'error'));
   }
+
+  const connect = async () => {
+    if (connection.readyState === 1) {
+      return connection;
+    }
+
+    if (pendingConnection) {
+      return pendingConnection;
+    }
+
+    const uri = getUri();
+    if (!uri) {
+      const error = new Error('Database configuration is unavailable.');
+      error.code = 'DATABASE_CONFIGURATION_MISSING';
+      throw error;
+    }
+
+    const attempt = Promise.resolve()
+      .then(() => mongooseClient.connect(uri, options))
+      .then(() => connection);
+
+    pendingConnection = attempt;
+
+    try {
+      return await attempt;
+    } finally {
+      // A completed promise must not prevent reconnection after a later drop.
+      if (pendingConnection === attempt) {
+        pendingConnection = null;
+      }
+    }
+  };
+
+  return {
+    connect,
+    getState: () => getDatabaseState(connection),
+    hasPendingConnection: () => pendingConnection !== null,
+    clearPendingConnection: () => {
+      pendingConnection = null;
+    }
+  };
+};
+
+const defaultConnectionManager = createConnectionManager();
+
+export const connectDB = () => defaultConnectionManager.connect();
+export const hasPendingConnection = () => defaultConnectionManager.hasPendingConnection();
+
+export const closeDB = async () => {
+  defaultConnectionManager.clearPendingConnection();
+  await mongoose.disconnect();
 };

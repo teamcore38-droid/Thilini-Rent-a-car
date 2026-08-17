@@ -6,8 +6,10 @@ import {
   uploadMultipleImages,
   deleteImage
 } from '../controllers/uploadController.js';
+import { noStore } from '../middleware/cache.js';
 
 const router = express.Router();
+router.use(noStore);
 
 // Memory storage for stream uploads directly to Cloudinary
 const storage = multer.memoryStorage();

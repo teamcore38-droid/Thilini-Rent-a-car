@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../config/mongoose.js';
 import { VEHICLE_CATEGORIES, TRANSMISSION_TYPES, FUEL_TYPES, SERVICE_TYPES, VEHICLE_STATUSES } from '../config/constants.js';
 
 const vehicleSchema = new mongoose.Schema(
@@ -19,14 +19,12 @@ const vehicleSchema = new mongoose.Schema(
     make: {
       type: String,
       required: [true, 'Make is required'],
-      trim: true,
-      index: true
+      trim: true
     },
     model: {
       type: String,
       required: [true, 'Model is required'],
-      trim: true,
-      index: true
+      trim: true
     },
     year: {
       type: Number,
@@ -148,7 +146,14 @@ const vehicleSchema = new mongoose.Schema(
 );
 
 // Compound indexes for fast fleet filtering
+vehicleSchema.index(
+  { name: 'text', make: 'text', model: 'text' },
+  { name: 'vehicle_text_search', weights: { name: 5, model: 3, make: 2 } }
+);
+vehicleSchema.index({ active: 1, status: 1, dailyRate: 1 });
 vehicleSchema.index({ active: 1, status: 1, category: 1, dailyRate: 1 });
+vehicleSchema.index({ active: 1, status: 1, year: -1 });
+vehicleSchema.index({ active: 1, status: 1, name: 1 });
 vehicleSchema.index({ active: 1, featured: 1 });
 
 export const Vehicle = mongoose.model('Vehicle', vehicleSchema);

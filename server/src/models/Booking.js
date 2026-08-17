@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from '../config/mongoose.js';
 import { SERVICE_TYPES, BOOKING_STATUSES, CONTACT_METHODS } from '../config/constants.js';
 
 const bookingSchema = new mongoose.Schema(

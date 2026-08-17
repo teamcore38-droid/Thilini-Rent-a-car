@@ -11,7 +11,7 @@ import {
 } from '../controllers/vehicleController.js';
 import { protect } from '../middleware/auth.js';
 import { vehicleValidationRules, validateRequest } from '../middleware/validators.js';
-import { cachePublicData } from '../middleware/cache.js';
+import { cachePublicData, cacheVehicleDetails, noStore } from '../middleware/cache.js';
 
 const router = express.Router();
 
@@ -20,13 +20,13 @@ router.get('/', cachePublicData, getVehicles);
 router.get('/featured', cachePublicData, getFeaturedVehicles);
 
 // Admin protected routes
-router.get('/admin/all', protect, getAdminVehicles);
-router.post('/admin', protect, vehicleValidationRules, validateRequest, createVehicle);
-router.put('/admin/:id', protect, vehicleValidationRules, validateRequest, updateVehicle);
-router.delete('/admin/:id', protect, deleteVehicle);
+router.get('/admin/all', noStore, protect, getAdminVehicles);
+router.post('/admin', noStore, protect, vehicleValidationRules, validateRequest, createVehicle);
+router.put('/admin/:id', noStore, protect, vehicleValidationRules, validateRequest, updateVehicle);
+router.delete('/admin/:id', noStore, protect, deleteVehicle);
 
 // Public slug routes must follow fixed admin/featured paths.
-router.get('/:slug/similar', cachePublicData, getSimilarVehicles);
-router.get('/:slug', cachePublicData, getVehicleBySlug);
+router.get('/similar', cacheVehicleDetails, getSimilarVehicles);
+router.get('/:slug', cacheVehicleDetails, getVehicleBySlug);
 
 export default router;

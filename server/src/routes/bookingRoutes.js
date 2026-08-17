@@ -12,8 +12,10 @@ import {
 import { protect } from '../middleware/auth.js';
 import { bookingLimiter } from '../middleware/rateLimiter.js';
 import { bookingValidationRules, validateRequest } from '../middleware/validators.js';
+import { noStore } from '../middleware/cache.js';
 
 const router = express.Router();
+router.use(noStore);
 
 // Public routes
 router.post('/', bookingLimiter, bookingValidationRules, validateRequest, createBooking);
