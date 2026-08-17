@@ -4,6 +4,18 @@ import './index.css'
 import App from './App.jsx'
 import AppErrorBoundary from './components/common/AppErrorBoundary.jsx'
 import { clearChunkReloadGuard, shouldAttemptChunkReload } from './utils/chunkRecovery.js'
+import { initializeMonitoring, markRouteTransitionStart } from './utils/monitoring.js'
+
+initializeMonitoring()
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest?.('a[href]')
+  if (!link) return
+  const destination = new URL(link.href, window.location.href)
+  if (destination.origin === window.location.origin && destination.pathname !== window.location.pathname) {
+    markRouteTransitionStart(destination.pathname)
+  }
+}, { capture: true })
 
 const sessionStorageIfAvailable = () => {
   try {

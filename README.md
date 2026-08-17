@@ -164,6 +164,26 @@ Run backend unit tests for date overlap detection, booking reference generation,
 npm run test:server
 ```
 
+## 📈 Optional Production Performance Monitoring
+
+Client monitoring is disabled safely by default. To send privacy-safe route,
+API, JavaScript error, and Core Web Vital events to your own collector, set:
+
+```bash
+VITE_ENABLE_MONITORING=true
+VITE_MONITORING_ENDPOINT=https://your-monitoring-collector.example/events
+VITE_APP_RELEASE=your-release-id
+```
+
+The monitoring payload excludes form values, contact details, tokens, query
+strings, and database information. API responses also expose `X-Request-ID`,
+and the server writes structured request duration records for correlation.
+
+Operational health checks:
+
+- `GET /health/live` — process liveness; never waits for MongoDB.
+- `GET /health/ready` — immediate database readiness state.
+
 ---
 
 ## 🏗️ Production Build Commands

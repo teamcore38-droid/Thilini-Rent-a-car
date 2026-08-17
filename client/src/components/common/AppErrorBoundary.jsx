@@ -1,5 +1,10 @@
 import { Component } from 'react'
-import { clearChunkReloadAttempt, shouldAttemptChunkReload } from '../../utils/chunkRecovery.js'
+import {
+  clearChunkReloadAttempt,
+  isChunkLoadError,
+  shouldAttemptChunkReload,
+} from '../../utils/chunkRecovery.js'
+import { reportMonitoringEvent } from '../../utils/monitoring.js'
 
 const sessionStorageIfAvailable = () => {
   try {
@@ -18,6 +23,12 @@ class AppErrorBoundary extends Component {
 
   componentDidCatch(error, info) {
     console.error('Application render failed', error, info)
+    reportMonitoringEvent('javascript_error', {
+      route: window.location.pathname,
+      category: isChunkLoadError(error)
+        ? 'chunk_load_error'
+        : 'react_render_error'
+    })
 
     if (shouldAttemptChunkReload(
       error,
