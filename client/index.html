@@ -33,9 +33,21 @@
     <link rel="icon" type="image/webp" href="/logo-transparent.webp" />
     <link rel="shortcut icon" type="image/webp" href="/logo-transparent.webp" />
     <link rel="apple-touch-icon" href="/logo-transparent.webp" />
+    <style>
+      #trc-boot-fallback { opacity: 0; animation: trc-reveal 0s 2s forwards; }
+      @keyframes trc-reveal { to { opacity: 1; } }
+    </style>
   </head>
   <body class="bg-slate-50 text-charcoal-900 antialiased selection:bg-brand-500 selection:text-white">
-    <div id="root"></div>
+    <div id="root">
+      <main id="trc-boot-fallback" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#f8fafc;font-family:system-ui,sans-serif;text-align:center">
+        <div>
+          <strong style="display:block;font-size:20px;color:#181b19">The website is taking longer than expected</strong>
+          <p style="margin:12px 0 20px;color:#475569">Reload to get the latest version.</p>
+          <a href="/" style="display:inline-block;border-radius:12px;background:#dc2626;padding:12px 20px;color:#fff;font-weight:600;text-decoration:none">Reload page</a>
+        </div>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
