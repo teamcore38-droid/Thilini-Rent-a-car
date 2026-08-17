@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { verifyToken } from '../middleware/auth.js';
+import { protect } from '../middleware/auth.js';
 import {
   uploadSingleImage,
   uploadMultipleImages,
@@ -43,12 +43,12 @@ const upload = multer({
 });
 
 // Single image upload (Protected)
-router.post('/image', verifyToken, upload.single('image'), uploadSingleImage);
+router.post('/image', protect, upload.single('image'), uploadSingleImage);
 
 // Multi-image upload (Protected, max 10 images)
-router.post('/multiple', verifyToken, upload.array('images', 10), uploadMultipleImages);
+router.post('/multiple', protect, upload.array('images', 10), uploadMultipleImages);
 
 // Delete image (Protected)
-router.delete('/image', verifyToken, deleteImage);
+router.delete('/image', protect, deleteImage);
 
 export default router;
